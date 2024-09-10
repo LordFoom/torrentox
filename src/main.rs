@@ -1,3 +1,4 @@
+mod model;
 mod parser;
 
 ///TODO add torrent file parsing
