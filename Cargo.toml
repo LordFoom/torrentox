@@ -10,5 +10,6 @@ clap = "4.5"
 serde = "1.0.210"
 serde_bencode = "0.2.4"
 serde_derive = "1.0.210"
+thiserror = "1.0.63"
 
 

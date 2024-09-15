@@ -1,3 +1,4 @@
+mod error_types;
 mod model;
 mod parser;
 
