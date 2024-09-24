@@ -13,4 +13,7 @@ use args::AppArgs;
 fn main() {
     let args = AppArgs::parse();
     let torrent_files = args.torrent_files;
+    for torrent_file in torrent_files {
+        let parsed_file = parse_torrent_file(torrent_file);
+    }
 }
