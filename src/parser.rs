@@ -12,4 +12,13 @@ pub fn parse_torrent_file(file_name: &str) -> Result<TorrentFile, TorrentParseEr
 }
 
 #[cfg(test)]
-mod test {}
+mod test {
+    #[allow(unused_imports)]
+    use super::*;
+
+    #[test]
+    pub fn test_parse_torrent_file() {
+        let file_name = "archlinux-2024.09.01-x86_64.iso.torrent";
+        let torrent_file = parse_torrent_file(file_name).unwrap();
+    }
+}
