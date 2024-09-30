@@ -3,7 +3,7 @@ use std::{fs::File, io::Read};
 use crate::{error_types::TorrentParseError, model::TorrentFile};
 
 pub fn parse_torrent_file(file_name: &str) -> Result<TorrentFile, TorrentParseError> {
-    let mut file = File::from(file_name);
+    let mut file = File::open(file_name)?;
 
     let mut file_contents = String::new();
     file.read_to_string(&mut file_contents);
@@ -20,5 +20,6 @@ mod test {
     pub fn test_parse_torrent_file() {
         let file_name = "archlinux-2024.09.01-x86_64.iso.torrent";
         let torrent_file = parse_torrent_file(file_name).unwrap();
+        torrent_file.
     }
 }
