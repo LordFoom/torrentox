@@ -2,10 +2,12 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Info {
-    name: Option<String>,
-    piece_length: usize,
+    pub name: Option<String>,
+    pub piece_length: usize,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TorrentFile {
-    announce: String,
-    info: Info,
+    pub announce: String,
+    pub info: Info,
 }

@@ -5,6 +5,6 @@ use thiserror::Error;
 pub enum TorrentParseError {
     #[error("Failed to decode the torrent file")]
     BenCode(#[from] BencodeError),
-    #[error("Failed to open the torrent file")]
+    #[error("Failed to read the torrent file")]
     CannotOpenFile(#[from] std::io::Error),
 }
