@@ -1,3 +1,4 @@
+use color_eyre::eyre::Result;
 use std::{fs::File, io::Read};
 
 use crate::{error_types::TorrentParseError, model::TorrentFile};
