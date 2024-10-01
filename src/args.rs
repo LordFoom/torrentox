@@ -6,4 +6,6 @@ pub struct AppArgs {
     ///List of arguments we can give
     //the reviled java programmer
     pub torrent_files: Vec<String>,
+    #[arg(short, long)]
+    pub verbose: bool,
 }

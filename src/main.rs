@@ -8,10 +8,12 @@ use args::AppArgs;
 use color_eyre::eyre::Result;
 use parser::parse_torrent_file;
 
-fn init() -> Result<()> {
-    //init color eyre
+fn init(verbose: &bool) -> Result<()> {
+    //pretty error messages
     color_eyre::install()?;
 
+    //logging
+    let stdout = 
     Ok(())
 }
 ///TODO add torrent file parsing
