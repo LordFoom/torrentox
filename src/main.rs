@@ -19,7 +19,7 @@ fn init(verbose: bool) -> Result<()> {
     //pretty error messages
     color_eyre::install()?;
 
-    let log_level = if (verbose) {
+    let log_level = if verbose {
         LevelFilter::Debug
     } else {
         LevelFilter::Warn

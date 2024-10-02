@@ -1,10 +1,13 @@
 use color_eyre::eyre::Result;
+use log::debug;
 use std::{fs::File, io::Read};
 
 use crate::{error_types::TorrentParseError, model::TorrentFile};
 
 pub fn parse_torrent_file(file_name: &str) -> Result<TorrentFile, TorrentParseError> {
+    debug!("Parsing {file_name}");
     let mut file = File::open(file_name)?;
+    debug!("Parsed {file_name}");
 
     let mut file_contents = String::new();
     file.read_to_string(&mut file_contents)?;
