@@ -1,5 +1,6 @@
 mod args;
 mod error_types;
+mod log_init_for_tests;
 mod model;
 mod parser;
 use clap::Parser;

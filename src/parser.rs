@@ -1,5 +1,6 @@
 use color_eyre::eyre::Result;
 use log::debug;
+use log::info;
 use std::{fs::File, io::Read};
 
 use crate::{error_types::TorrentParseError, model::TorrentFile};
@@ -20,10 +21,12 @@ mod test {
     #[allow(unused_imports)]
     use super::*;
 
-    use crate::test_logging;
+    #[allow(unused_imports)]
+    use crate::log_init_for_tests;
 
     #[test]
     pub fn test_parse_torrent_file() {
+        info!("Test is starting!");
         let file_name = "archlinux-2024.09.01-x86_64.iso.torrent";
         let torrent_file = parse_torrent_file(file_name).unwrap();
         assert_ne!(None, torrent_file.info.name);
