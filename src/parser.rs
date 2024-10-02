@@ -20,6 +20,8 @@ mod test {
     #[allow(unused_imports)]
     use super::*;
 
+    use crate::test_logging;
+
     #[test]
     pub fn test_parse_torrent_file() {
         let file_name = "archlinux-2024.09.01-x86_64.iso.torrent";
