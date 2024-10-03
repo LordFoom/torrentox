@@ -10,9 +10,13 @@ pub fn parse_torrent_file(file_name: &str) -> Result<TorrentFile, TorrentParseEr
     let mut file = File::open(file_name)?;
     debug!("Parsed {file_name}");
 
-    let mut file_contents = String::new();
-    file.read_to_string(&mut file_contents)?;
-    let torrent_file: TorrentFile = serde_bencode::from_str(&file_contents)?;
+    debug!("Reading {file_name} into byte vec...");
+    let mut file_bytes = Vec::new();
+    file.read_to_end(&mut file_bytes)?;
+    debug!("Read {file_name} into byte vec");
+    debug!("Deserializing torrent file");
+    let torrent_file: TorrentFile = serde_bencode::from_bytes(&file_bytes)?;
+    debug!("TorrentFile parsed - the Ox rides again!");
     Ok(torrent_file)
 }
 
