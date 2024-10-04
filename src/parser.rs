@@ -41,5 +41,28 @@ mod test {
         );
         assert!(torrent_file.info.piece_length > 0);
         assert_eq!(None, torrent_file.info.meta_version);
+
+        let mut files_found = false;
+        let mut length_found = false;
+        if let Some(_files) = torrent_file.info.possible_files {
+            info!("Had a files element");
+            files_found = true;
+        } else {
+            info!("Had NO files element");
+        }
+
+        if let Some(length) = torrent_file.info.possible_length {
+            info!("We had a length element so big: {}", length);
+            length_found = true;
+        } else {
+            info!("We had NO length element");
+        }
+
+        let exactly_one_of_two_options =
+            (files_found && !length_found) || (!files_found && length_found);
+        assert!(
+            exactly_one_of_two_options,
+            "Expected one of 'length' or 'files', but not both and not neither"
+        );
     }
 }
