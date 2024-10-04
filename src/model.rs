@@ -4,7 +4,7 @@ use serde_derive::{Deserialize, Serialize};
 pub struct Info {
     pub name: Option<String>,
     #[serde(rename = "piece length")]
-    pub piece_length: i64,
+    pub piece_length: u64,
     #[serde(rename = "meta version")]
     pub meta_version: Option<i8>,
 }
