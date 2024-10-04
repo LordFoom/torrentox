@@ -1,5 +1,6 @@
 use color_eyre::eyre::Result;
 use log::debug;
+#[allow(unused_imports)]
 use log::info;
 use std::{fs::File, io::Read};
 
@@ -34,5 +35,11 @@ mod test {
         let file_name = "archlinux-2024.09.01-x86_64.iso.torrent";
         let torrent_file = parse_torrent_file(file_name).unwrap();
         assert_ne!(None, torrent_file.info.name);
+        info!(
+            "This is the torrent file piece length: {}",
+            torrent_file.info.piece_length
+        );
+        assert!(torrent_file.info.piece_length > 0);
+        assert_eq!(None, torrent_file.info.meta_version);
     }
 }
