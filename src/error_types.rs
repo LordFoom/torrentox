@@ -13,6 +13,9 @@ pub enum TorrentParseError {
 
 impl Display for TorrentParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        let msg = match self {
+            TorrentParseError::BenCode(why) => format!("Failed to decode the file {why}"),
+        };
+        write!(f, "{msg}")
     }
 }
