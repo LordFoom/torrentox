@@ -1,4 +1,5 @@
-use color_eyre::eyre::Result;
+use color_eyre::{eyre::Result, owo_colors::OwoColorize};
+use colored::Colorize;
 use log::debug;
 #[allow(unused_imports)]
 use log::info;
@@ -17,7 +18,11 @@ pub fn parse_torrent_file(file_name: &str) -> Result<TorrentFile, TorrentParseEr
     debug!("Read {file_name} into byte vec");
     debug!("Deserializing torrent file");
     let torrent_file: TorrentFile = serde_bencode::from_bytes(&file_bytes)?;
-    debug!("TorrentFile parsed - the Ox rides again!");
+    debug!(
+        "TorrentFile parsed - {}{}",
+        "the Ox rides again".truecolor(255, 165, 0).bold(),
+        "!!!".magenta().bold().italic(),
+    );
     Ok(torrent_file)
 }
 
@@ -25,7 +30,6 @@ pub fn parse_torrent_file(file_name: &str) -> Result<TorrentFile, TorrentParseEr
 mod test {
     #[allow(unused_imports)]
     use super::*;
-    use colored::Colorize;
 
     #[allow(unused_imports)]
     use crate::log_init_for_tests;
