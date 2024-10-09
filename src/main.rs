@@ -27,8 +27,6 @@ fn init(verbose: bool) -> Result<()> {
     };
 
     //logging
-    //do we need this, given we have a tui? Prooobably not, but maybe for an er
-    let stdout = ConsoleAppender::builder().build();
 
     let file_log = FileAppender::builder()
         .encoder(Box::new(PatternEncoder::new(

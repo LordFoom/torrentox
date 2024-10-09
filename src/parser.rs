@@ -73,5 +73,12 @@ mod test {
             exactly_one_of_two_options,
             "Expected one of 'length' or 'files', but not both and not neither"
         );
+
+        info!(
+            "This is the announce url {}",
+            torrent_file
+                .announce
+                .unwrap_or_else(|| "No announce url".to_owned())
+        );
     }
 }
