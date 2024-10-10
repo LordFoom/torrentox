@@ -1,3 +1,4 @@
+use serde_bytes::ByteBuf;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -19,11 +20,11 @@ pub struct Info {
     pub possible_files: Option<Vec<File>>,
     #[serde(rename = "length")]
     pub possible_length: Option<u64>,
-    pub pieces: String,
+    pub pieces: ByteBuf,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct File {
     pub length: u64,
-    pub path: Vec<String>,
+    pub path: Option<Vec<String>>,
 }

@@ -808,6 +808,7 @@ dependencies = [
  "log4rs",
  "serde",
  "serde_bencode",
+ "serde_bytes",
  "serde_derive",
  "thiserror",
 ]
