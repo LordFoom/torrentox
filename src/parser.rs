@@ -53,8 +53,23 @@ mod test {
 
         let mut files_found = false;
         let mut length_found = false;
-        if let Some(_files) = torrent_file.info.possible_files {
+        if let Some(files) = torrent_file.info.possible_files {
             info!("Had a files element");
+            info!(
+                "We had {} files in the files element",
+                files.len().magenta().bold()
+            );
+            files.iter().for_each(|file| {
+                info!("File length:  {}", file.length);
+                if let Some(path_vec) = file.possible_path.clone() {
+                    info!("Found a path of vec of so many: {}", path_vec.len());
+                    path_vec
+                        .iter()
+                        .for_each(|p| info!("path part: {}", p.cyan()));
+                } else {
+                    info!("{}", "No path was found".underline());
+                }
+            });
             files_found = true;
         } else {
             info!("Had NO files element");

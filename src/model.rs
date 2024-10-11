@@ -15,7 +15,7 @@ pub struct Info {
     #[serde(rename = "meta version")]
     pub meta_version: Option<i8>,
     ///Must have either files or length, but not both, and not neither
-    #[serde(rename = "file")]
+    #[serde(rename = "files")]
     ///Must have either files or length, but not both, and not neither
     pub possible_files: Option<Vec<File>>,
     #[serde(rename = "length")]
@@ -26,5 +26,5 @@ pub struct Info {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct File {
     pub length: u64,
-    pub path: Option<Vec<String>>,
+    pub possible_path: Option<Vec<String>>,
 }
