@@ -37,7 +37,7 @@ mod test {
     #[test]
     pub fn test_parse_torrent_file() {
         info!("Test is starting!");
-        let file_name = "archlinux-2024.09.01-x86_64.iso.torrent";
+        let file_name = "Fedora-KDE-Live-x86_64-40.torrent";
         let torrent_file = parse_torrent_file(file_name).unwrap();
         assert_ne!(None, torrent_file.info.name);
         info!(
