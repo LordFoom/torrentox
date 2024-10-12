@@ -57,7 +57,7 @@ mod test {
             info!("Had a files element");
             info!(
                 "We had {} files in the files element",
-                files.len().magenta().bold()
+                files.len().to_string().magenta().bold()
             );
             files.iter().for_each(|file| {
                 info!("File length:  {}", file.length);
