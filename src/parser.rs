@@ -1,4 +1,4 @@
-use color_eyre::{eyre::Result, owo_colors::OwoColorize};
+use color_eyre::eyre::Result;
 use colored::Colorize;
 use log::debug;
 #[allow(unused_imports)]

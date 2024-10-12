@@ -9,7 +9,7 @@ use args::AppArgs;
 use color_eyre::eyre::Result;
 use log::LevelFilter;
 use log4rs::{
-    append::{console::ConsoleAppender, file::FileAppender},
+    append::file::FileAppender,
     config::{runtime::Appender, Logger, Root},
     encode::pattern::PatternEncoder,
     Config,
