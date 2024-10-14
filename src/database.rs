@@ -14,3 +14,29 @@ pub fn init_tables(db: &DbConnection) -> Result<()> {
     db.conn.execute(create_table, [])?;
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_init_tables() {
+        let conn = Connection::open_in_memory().unwrap();
+        let name = String::from("Foom test name");
+        let db_name = String::from("Foom db name but it is in memory tee and, indeed, hee");
+        let db = DbConnection {
+            conn,
+            name,
+            db_name,
+        };
+        init_tables(&db).unwrap();
+        //does our table exist
+        let mut stmt = db.conn.prepare(".tables").unwrap();
+        let mut tables: Vec<String> = Vec::new();
+        let table_rows = stmt.query_map([], |row| row.get(0)).unwrap();
+        for table_name in table_rows {
+            tables.push(table_name.unwrap());
+        }
+        assert_eq!(1, tables.len());
+    }
+}
