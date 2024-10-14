@@ -31,7 +31,10 @@ mod test {
         };
         init_tables(&db).unwrap();
         //does our table exist
-        let mut stmt = db.conn.prepare(".tables").unwrap();
+        let mut stmt = db
+            .conn
+            .prepare("SELECT name FROM sqlite_master WHERE type='table'")
+            .unwrap();
         let mut tables: Vec<String> = Vec::new();
         let table_rows = stmt.query_map([], |row| row.get(0)).unwrap();
         for table_name in table_rows {
