@@ -1,4 +1,5 @@
 use color_eyre::eyre::Result;
+use log::info;
 use rusqlite::Connection;
 
 ///Holder of the DB Connection information
@@ -17,6 +18,8 @@ pub fn init_tables(db: &DbConnection) -> Result<()> {
 
 #[cfg(test)]
 mod test {
+    use color_eyre::owo_colors::OwoColorize;
+
     use super::*;
 
     #[test]
@@ -40,6 +43,11 @@ mod test {
         for table_name in table_rows {
             tables.push(table_name.unwrap());
         }
-        assert_eq!(1, tables.len());
+        info!(
+            "num tables found: {}",
+            tables.len().to_string().magenta().bold()
+        );
+
+        assert!(tables.contains(&String::from("torrent")));
     }
 }
