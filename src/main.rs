@@ -8,6 +8,7 @@ use clap::Parser;
 
 use args::AppArgs;
 use color_eyre::eyre::Result;
+use database::{init_tables, DbConnection};
 use log::LevelFilter;
 use log4rs::{
     append::file::FileAppender,
@@ -16,6 +17,7 @@ use log4rs::{
     Config,
 };
 use parser::parse_torrent_file;
+use rusqlite::Connection;
 
 fn init(verbose: bool) -> Result<()> {
     //pretty error messages
@@ -65,10 +67,24 @@ fn init(verbose: bool) -> Result<()> {
 fn main() -> Result<()> {
     let args = AppArgs::parse();
     init(args.verbose)?;
+
+    let db = init_db()?;
+    init_tables(&db)?;
+
     let torrent_files = args.torrent_files;
     for torrent_file in torrent_files {
         let parsed_file = parse_torrent_file(&torrent_file);
     }
 
     Ok(())
+}
+
+fn init_db() -> Result<DbConnection> {
+    let conn = Connection::open("./torrentox.db")?;
+    let db = DbConnection {
+        conn,
+        name: "TorrentOx".to_owned(),
+        db_name: "torrentox.db".to_owned(),
+    };
+    Ok(db)
 }

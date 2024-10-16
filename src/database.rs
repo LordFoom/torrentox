@@ -1,9 +1,8 @@
 use color_eyre::eyre::Result;
-use log::info;
 use rusqlite::Connection;
 
 ///Holder of the DB Connection information
-struct DbConnection {
+pub struct DbConnection {
     pub conn: Connection,
     ///Name of the db on the file
     pub db_name: String,
@@ -18,7 +17,8 @@ pub fn init_tables(db: &DbConnection) -> Result<()> {
 
 #[cfg(test)]
 mod test {
-    use color_eyre::owo_colors::OwoColorize;
+    use colored::*;
+    use log::info;
 
     use super::*;
 
