@@ -1,6 +1,8 @@
 use color_eyre::eyre::Result;
 use rusqlite::Connection;
 
+use crate::model::TorrentFile;
+
 ///Holder of the DB Connection information
 pub struct DbConnection {
     pub conn: Connection,
@@ -14,6 +16,8 @@ pub fn init_tables(db: &DbConnection) -> Result<()> {
     db.conn.execute(create_table, [])?;
     Ok(())
 }
+
+pub fn save_torrent_file(torrent_file: &TorrentFile, dg: &DbConnection) {}
 
 #[cfg(test)]
 mod test {

@@ -8,7 +8,7 @@ use clap::Parser;
 
 use args::AppArgs;
 use color_eyre::eyre::Result;
-use database::{init_tables, DbConnection};
+use database::{init_tables, save_torrent_file, DbConnection};
 use log::LevelFilter;
 use log4rs::{
     append::file::FileAppender,
@@ -73,7 +73,8 @@ fn main() -> Result<()> {
 
     let torrent_files = args.torrent_files;
     for torrent_file in torrent_files {
-        let parsed_file = parse_torrent_file(&torrent_file);
+        let torrent_file = parse_torrent_file(&torrent_file)?;
+        save_torrent_file(&torrent_file, &db);
     }
 
     Ok(())
