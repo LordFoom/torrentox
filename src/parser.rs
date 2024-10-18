@@ -7,7 +7,7 @@ use std::{fs::File, io::Read};
 
 use crate::{error_types::TorrentParseError, model::TorrentFile};
 
-pub fn parse_torrent_file(file_name: &str) -> Result<TorrentFile, TorrentParseError> {
+pub fn parse_torrent_file(file_name: &str) -> Result<(TorrentFile, Vec<u8>), TorrentParseError> {
     debug!("Parsing {file_name}");
     let mut file = File::open(file_name)?;
     debug!("Parsed {file_name}");
@@ -19,11 +19,11 @@ pub fn parse_torrent_file(file_name: &str) -> Result<TorrentFile, TorrentParseEr
     debug!("Deserializing torrent file");
     let torrent_file: TorrentFile = serde_bencode::from_bytes(&file_bytes)?;
     debug!(
-        "TorrentFile parsed - {}{}",
-        "the Ox rides again".truecolor(255, 165, 0).bold(),
-        "!!!".magenta().bold().italic(),
+        "TorrentFile parsed - the {} rides {}",
+        "Ox".truecolor(255, 165, 0).bold(),
+        "again!!!".magenta().bold().italic(),
     );
-    Ok(torrent_file)
+    Ok((torrent_file, file_bytes))
 }
 
 #[cfg(test)]

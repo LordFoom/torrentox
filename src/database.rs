@@ -1,5 +1,6 @@
 use color_eyre::eyre::Result;
 use rusqlite::Connection;
+use serde_bytes::ByteBuf;
 
 use crate::model::TorrentFile;
 
@@ -12,12 +13,14 @@ pub struct DbConnection {
 }
 ///Create necessary torrent tables iff not already created.
 pub fn init_tables(db: &DbConnection) -> Result<()> {
-    let create_table = "CREATE TABLE IF NOT EXISTS torrent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, file_path TEXT, announce_url TEXT, torent_file_contents BLOB) ";
+    let create_table = "CREATE TABLE IF NOT EXISTS torrent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, file_path TEXT, announce_url TEXT, torrent_file_raw BLOB) ";
     db.conn.execute(create_table, [])?;
     Ok(())
 }
 
-pub fn save_torrent_file(torrent_file: &TorrentFile, dg: &DbConnection) {}
+pub fn save_torrent_file(torrent_file: &TorrentFile, raw_bytes: &Vec<u8>, dg: &DbConnection) {
+    let sql = "INSERT INTO torrent (name, file_path, announce_url, torrent_file_raw) VALUES (?1, ?2, ?3, ?4) ";
+}
 
 #[cfg(test)]
 mod test {

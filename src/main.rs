@@ -73,8 +73,8 @@ fn main() -> Result<()> {
 
     let torrent_files = args.torrent_files;
     for torrent_file in torrent_files {
-        let torrent_file = parse_torrent_file(&torrent_file)?;
-        save_torrent_file(&torrent_file, &db);
+        let (torrent, bytes) = parse_torrent_file(&torrent_file)?;
+        save_torrent_file(&torrent, &bytes, &db);
     }
 
     Ok(())
