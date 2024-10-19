@@ -72,9 +72,9 @@ fn main() -> Result<()> {
     init_tables(&db)?;
 
     let torrent_files = args.torrent_files;
-    for torrent_file in torrent_files {
-        let (torrent, bytes) = parse_torrent_file(&torrent_file)?;
-        save_torrent_file(&torrent, &bytes, &db);
+    for torrent_file_path in torrent_files {
+        let (torrent, bytes) = parse_torrent_file(&torrent_file_path)?;
+        save_torrent_file(&torrent,, &torrent_file_path, &bytes, &db);
     }
 
     Ok(())

@@ -18,8 +18,23 @@ pub fn init_tables(db: &DbConnection) -> Result<()> {
     Ok(())
 }
 
-pub fn save_torrent_file(torrent_file: &TorrentFile, raw_bytes: &Vec<u8>, dg: &DbConnection) {
+pub fn save_torrent_file(
+    torrent_file: &TorrentFile,
+    file_path: &str,
+    raw_bytes: &Vec<u8>,
+    db: &DbConnection,
+) -> Result<()> {
     let sql = "INSERT INTO torrent (name, file_path, announce_url, torrent_file_raw) VALUES (?1, ?2, ?3, ?4) ";
+    db.conn.execute(
+        sql,
+        (
+            torrent_file.info.name.clone().unwrap_or("None".to_owned()),
+            file_path,
+            torrent_file.announce.clone().unwrap_or("None".to_owned()),
+            raw_bytes,
+        ),
+    )?;
+    Ok(())
 }
 
 #[cfg(test)]
