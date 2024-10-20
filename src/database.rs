@@ -18,6 +18,8 @@ pub fn init_tables(db: &DbConnection) -> Result<()> {
     Ok(())
 }
 
+///We save a torrent file, recording a few attributes,
+///but otherwise storing the raw bytes so as not to lose any info during the coding process
 pub fn save_torrent_file(
     torrent_file: &TorrentFile,
     file_path: &str,
@@ -36,6 +38,9 @@ pub fn save_torrent_file(
     )?;
     Ok(())
 }
+
+pub fn list_torrent_files() {}
+pub fn load_torrent_file() {}
 
 #[cfg(test)]
 mod test {
