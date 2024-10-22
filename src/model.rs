@@ -1,6 +1,11 @@
 use serde_bytes::ByteBuf;
 use serde_derive::{Deserialize, Serialize};
 
+pub struct Torrent {
+    pub torrent_file: TorrentFile,
+    pub name: String,
+    pub file_path: String,
+}
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TorrentFile {
     pub announce: Option<String>,

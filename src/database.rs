@@ -39,7 +39,10 @@ pub fn save_torrent_file(
     Ok(())
 }
 
-pub fn list_torrent_files() {}
+pub fn list_torrent_files(db: &DbConnection) {
+    let sql = "SELECT (name, file_path, announce_url, torrent_file_raw) FROM torrent";
+    db.conn.execute(sql, ())?;
+}
 pub fn load_torrent_file() {}
 
 #[cfg(test)]
