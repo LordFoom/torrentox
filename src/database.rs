@@ -2,7 +2,7 @@ use anyhow::Result;
 use color_eyre::eyre::Result;
 use rusqlite::Connection;
 
-use crate::model::TorrentFile;
+use crate::model::{Torrent, TorrentFile};
 
 ///Holder of the DB Connection information
 pub struct DbConnection {
@@ -39,11 +39,13 @@ pub fn save_torrent_file(
     Ok(())
 }
 
-pub fn list_torrent_files(db: &DbConnection) {
+pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
     let sql = "SELECT (name, file_path, announce_url, torrent_file_raw) FROM torrent";
-    db.conn.execute(sql, ())?;
+    let stmt = db.conn.prepare(sql)?;
+    let torrent_file_list =
+        stmt.query_map([], |row| (row.get(0), row.get(1), row.get(2), row.get(3)));
 }
-pub fn load_torrent_file(db: &DbConnection) -> Result<Option<(TorrentFile, Vec<u8>)>> {}
+pub fn load_torrent_file(name: &str, db: &DbConnection) -> Result<Option<(Torrent)>> {}
 
 #[cfg(test)]
 mod test {
