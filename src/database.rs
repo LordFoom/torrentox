@@ -1,6 +1,6 @@
+use anyhow::Result;
 use color_eyre::eyre::Result;
 use rusqlite::Connection;
-use serde_bytes::ByteBuf;
 
 use crate::model::TorrentFile;
 
@@ -43,7 +43,7 @@ pub fn list_torrent_files(db: &DbConnection) {
     let sql = "SELECT (name, file_path, announce_url, torrent_file_raw) FROM torrent";
     db.conn.execute(sql, ())?;
 }
-pub fn load_torrent_file() {}
+pub fn load_torrent_file(db: &DbConnection) -> Result<Option<(TorrentFile, Vec<u8>)>> {}
 
 #[cfg(test)]
 mod test {
