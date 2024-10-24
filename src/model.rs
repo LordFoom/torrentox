@@ -5,6 +5,7 @@ pub struct Torrent {
     pub torrent_file: TorrentFile,
     pub name: String,
     pub file_path: String,
+    pub announce_url: Option<String>,
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TorrentFile {

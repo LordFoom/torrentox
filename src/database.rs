@@ -1,5 +1,4 @@
-use anyhow::Result;
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{Result, WrapErr};
 use rusqlite::Connection;
 
 use crate::model::{Torrent, TorrentFile};
@@ -40,10 +39,40 @@ pub fn save_torrent_file(
 }
 
 pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
-    let sql = "SELECT (name, file_path, announce_url, torrent_file_raw) FROM torrent";
+    let sql = "SELECT name, file_path, announce_url, torrent_file_raw FROM torrent";
     let stmt = db.conn.prepare(sql)?;
-    let torrent_file_list =
-        stmt.query_map([], |row| (row.get(0), row.get(1), row.get(2), row.get(3)));
+    //let torrent_file_list = stmt.query_map([], |row| {
+    //    let torrent_file_raw: Vec<u8> = row.get(3)?;
+    //    let torrent_file = serde_bencode::from_bytes(&torrent_file_raw)
+    //        .map_err("Failed to create torrent file from db bytes")?;
+    //    //let torrent_file =
+    //    //    serde_bencode::from_bytes(&torrent_file_raw).map_err(|err| rusqlite::Error(err));
+    //    //(row.get(0), row.get(1), row.get(2), row.get(3)));
+    //});
+    //let vec = Vec::new();
+    //Ok(vec)
+    let torrent_file_list = stmt
+        .query_map([], |row| {
+            let torrent_file_raw: Vec<u8> = row.get(3)?;
+            let torrent_file = serde_bencode::from_bytes(&torrent_file_raw)
+                .wrap_err("Failed to deserialize torrent_file_raw")?;
+
+            Ok(Torrent {
+                name: row.get(0)?,
+                file_path: row.get(1)?,
+                announce_url: row.get(2)?,
+                torrent_file,
+            })
+        })
+        .wrap_err("Failed to map query result")?;
+    let mut torrent_vec = Vec::new();
+
+    for torrent in torrent_file_list {
+        let tr = torrent.unwrap();
+        torrent_vec.push(tr);
+    }
+
+    Ok(torrent_vec)
 }
 pub fn load_torrent_file(name: &str, db: &DbConnection) -> Result<Option<(Torrent)>> {}
 

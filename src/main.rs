@@ -6,6 +6,7 @@ mod model;
 mod parser;
 use clap::Parser;
 
+//use anyhow::Result;
 use args::AppArgs;
 use color_eyre::eyre::Result;
 use database::{init_tables, save_torrent_file, DbConnection};
