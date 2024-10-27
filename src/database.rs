@@ -1,5 +1,6 @@
 use anyhow::anyhow;
 use color_eyre::eyre::{Result, WrapErr};
+use rusqlite::params;
 use rusqlite::Connection;
 use rusqlite::Error as RusqliteError;
 
@@ -42,11 +43,12 @@ pub fn save_torrent_file(
     Ok(())
 }
 
-pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
+pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>, AppError> {
     let sql = "SELECT name, file_path, announce_url, torrent_file_raw FROM torrent";
     let mut stmt = db
         .conn
         .prepare(sql)
+        .map_err(DbError::from)
         .wrap_err("Failed to prepare the list torrent file statement")?;
     //let torrent_file_list = stmt.query_map([], |row| {
     //    let torrent_file_raw: Vec<u8> = row.get(3)?;
@@ -61,9 +63,9 @@ pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
     let torrent_file_list = stmt
         .query_map([], |row| {
             let torrent_file_raw: Vec<u8> = row.get(3)?;
-            let torrent_file = serde_bencode::from_bytes(&torrent_file_raw)
-                .map_err(|e| DbError::from)
-                .wrap_err("Failed to deserialize torrent_file_raw")?;
+            let torrent_file = serde_bencode::from_bytes(&torrent_file_raw).unwrap();
+            //.map_err(DbError::from)
+            //.wrap_err("Failed to deserialize torrent_file_raw")?;
 
             Ok(Torrent {
                 name: row.get(0)?,
@@ -82,9 +84,23 @@ pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
 
     Ok(torrent_vec)
 }
-pub fn load_torrent_file(name: &str, db: &DbConnection) -> Result<Option<(Torrent)>> {
+
+///Use the name. Get the file
+pub fn load_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
     let sql = "SELECT name, file_path, announce_url, torrent_file_raw FROM torrent where name = ?1";
-    let mut stmt = db.conn.prepare(sql)?;
+    db.conn
+        .query_row(sql, params![name], |row| {
+            let torrent_file_raw: Vec<u8> = row.get(3)?;
+            let torrent_file = serde_bencode::from_bytes(&torrent_file_raw).unwrap();
+
+            Ok(Torrent {
+                name: row.get(0)?,
+                file_path: row.get(1)?,
+                announce_url: row.get(2)?,
+                torrent_file,
+            })
+        })
+        .wrap_err("")
 }
 
 #[cfg(test)]
