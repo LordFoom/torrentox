@@ -4,6 +4,7 @@ use rusqlite::params;
 use rusqlite::Connection;
 use rusqlite::Error as RusqliteError;
 
+use crate::error_types::AppError;
 use crate::error_types::DbError;
 use crate::error_types::TorrentParseError;
 use crate::model::{Torrent, TorrentFile};
@@ -43,7 +44,7 @@ pub fn save_torrent_file(
     Ok(())
 }
 
-pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>, AppError> {
+pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
     let sql = "SELECT name, file_path, announce_url, torrent_file_raw FROM torrent";
     let mut stmt = db
         .conn
@@ -112,14 +113,7 @@ mod test {
 
     #[test]
     fn test_init_tables() {
-        let conn = Connection::open_in_memory().unwrap();
-        let name = String::from("Foom test name");
-        let db_name = String::from("Foom db name but it is in memory tee and, indeed, hee");
-        let db = DbConnection {
-            conn,
-            name,
-            db_name,
-        };
+        let db = init_test_conn();
         init_tables(&db).unwrap();
         //does our table exist
         let mut stmt = db
@@ -137,5 +131,22 @@ mod test {
         );
 
         assert!(tables.contains(&String::from("torrent")));
+    }
+
+    fn init_test_conn() -> DbConnection {
+        let conn = Connection::open_in_memory().unwrap();
+        let name = String::from("Foom test name");
+        let db_name = String::from("Foom db name but it is in memory tee and, indeed, hee");
+        let db = DbConnection {
+            conn,
+            name,
+            db_name,
+        };
+        db
+    }
+
+    #[test]
+    fn test_save_torrent_file() {
+        let conn = init_test_conn();
     }
 }
