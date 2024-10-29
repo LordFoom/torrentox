@@ -5,9 +5,12 @@ use log::debug;
 use log::info;
 use std::{fs::File, io::Read};
 
-use crate::{error_types::TorrentParseError, model::TorrentFile};
+use crate::{
+    error_types::TorrentParseError,
+    model::{Torrent, TorrentFile},
+};
 
-pub fn parse_torrent_file(file_name: &str) -> Result<(TorrentFile, Vec<u8>), TorrentParseError> {
+pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
     debug!("Parsing {file_name}");
     let mut file = File::open(file_name)?;
     debug!("Parsed {file_name}");
@@ -23,7 +26,14 @@ pub fn parse_torrent_file(file_name: &str) -> Result<(TorrentFile, Vec<u8>), Tor
         "Ox".truecolor(255, 165, 0).bold(),
         "again!!!".magenta().bold().italic(),
     );
-    Ok((torrent_file, file_bytes))
+    let torrent = Torrent {
+        torrent_file,
+        name: "Test torrent".to_owned(),
+        file_path: file_name.to_owned(),
+        raw_bytes: file_bytes,
+        announce_url: None,
+    };
+    Ok(torrent)
 }
 
 #[cfg(test)]
@@ -38,22 +48,22 @@ mod test {
     pub fn test_parse_torrent_file() {
         info!("Test is starting!");
         let file_name = "Fedora-KDE-Live-x86_64-40.torrent";
-        let torrent_file = parse_torrent_file(file_name).unwrap();
-        assert_ne!(None, torrent_file.info.name);
+        let torrent = parse_torrent_file(file_name).unwrap();
+        assert_ne!(None, torrent.torrent_file.info.name);
         info!(
             "Name of this torrent info: {}",
-            torrent_file.info.name.unwrap().cyan().bold()
+            torrent.torrent_file.info.name.unwrap().cyan().bold()
         );
         info!(
             "This is the torrent file piece length: {}",
-            torrent_file.info.piece_length
+            torrent.torrent_file.info.piece_length
         );
-        assert!(torrent_file.info.piece_length > 0);
-        assert_eq!(None, torrent_file.info.meta_version);
+        assert!(torrent.torrent_file.info.piece_length > 0);
+        assert_eq!(None, torrent.torrent_file.info.meta_version);
 
         let mut files_found = false;
         let mut length_found = false;
-        if let Some(files) = torrent_file.info.possible_files {
+        if let Some(files) = torrent.torrent_file.info.possible_files {
             info!("Had a files element");
             info!(
                 "We had {} files in the files element",
@@ -75,7 +85,7 @@ mod test {
             info!("Had NO files element");
         }
 
-        if let Some(length) = torrent_file.info.possible_length {
+        if let Some(length) = torrent.torrent_file.info.possible_length {
             info!("We had a length element so big: {}", length);
             length_found = true;
         } else {
@@ -91,7 +101,8 @@ mod test {
 
         info!(
             "This is the announce url {}",
-            torrent_file
+            torrent
+                .torrent_file
                 .announce
                 .unwrap_or_else(|| "No announce url".to_owned())
         );
