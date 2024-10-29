@@ -73,6 +73,7 @@ pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
                 file_path: row.get(1)?,
                 announce_url: row.get(2)?,
                 torrent_file,
+                raw_bytes: torrent_file_raw,
             })
         })
         .wrap_err("Failed to map query result")?;
@@ -99,6 +100,7 @@ pub fn load_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
                 file_path: row.get(1)?,
                 announce_url: row.get(2)?,
                 torrent_file,
+                raw_bytes: torrent_file_raw,
             })
         })
         .wrap_err("")
@@ -108,6 +110,8 @@ pub fn load_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
 mod test {
     use colored::*;
     use log::info;
+
+    use crate::parser::parse_torrent_file;
 
     use super::*;
 
@@ -148,5 +152,7 @@ mod test {
     #[test]
     fn test_save_torrent_file() {
         let conn = init_test_conn();
+        let file_name = "Fedora-KDE-Live-x86_64-40.torrent";
+        let torrent = parse_torrent_file(file_name).unwrap();
     }
 }
