@@ -25,20 +25,24 @@ pub fn init_tables(db: &DbConnection) -> Result<()> {
 
 ///We save a torrent file, recording a few attributes,
 ///but otherwise storing the raw bytes so as not to lose any info during the coding process
-pub fn save_torrent_file(
-    torrent_file: &TorrentFile,
-    file_path: &str,
-    raw_bytes: &Vec<u8>,
-    db: &DbConnection,
-) -> Result<()> {
+pub fn save_torrent_file(torrent: &Torrent, db: &DbConnection) -> Result<()> {
     let sql = "INSERT INTO torrent (name, file_path, announce_url, torrent_file_raw) VALUES (?1, ?2, ?3, ?4) ";
     db.conn.execute(
         sql,
         (
-            torrent_file.info.name.clone().unwrap_or("None".to_owned()),
-            file_path,
-            torrent_file.announce.clone().unwrap_or("None".to_owned()),
-            raw_bytes,
+            torrent
+                .torrent_file
+                .info
+                .name
+                .clone()
+                .unwrap_or("None".to_owned()),
+            torrent.file_path.clone(),
+            torrent
+                .torrent_file
+                .announce
+                .clone()
+                .unwrap_or("None".to_owned()),
+            torrent.raw_bytes.clone(),
         ),
     )?;
     Ok(())
@@ -88,7 +92,7 @@ pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
 }
 
 ///Use the name. Get the file
-pub fn load_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
+pub fn select_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
     let sql = "SELECT name, file_path, announce_url, torrent_file_raw FROM torrent where name = ?1";
     db.conn
         .query_row(sql, params![name], |row| {
@@ -151,8 +155,13 @@ mod test {
 
     #[test]
     fn test_save_torrent_file() {
-        let conn = init_test_conn();
+        let db = init_test_conn();
         let file_name = "Fedora-KDE-Live-x86_64-40.torrent";
         let torrent = parse_torrent_file(file_name).unwrap();
+
+        save_torrent_file(&torrent, &db).unwrap();
+
+        let retrieved_torrent = select_torrent_file(file_name, &db).unwrap();
+        assert_eq!(torrent, retrieved_torrent);
     }
 }

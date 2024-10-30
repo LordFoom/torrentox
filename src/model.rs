@@ -1,6 +1,7 @@
 use serde_bytes::ByteBuf;
 use serde_derive::{Deserialize, Serialize};
 
+#[derive(Debug, PartialEq)]
 pub struct Torrent {
     pub torrent_file: TorrentFile,
     pub name: String,
@@ -8,13 +9,13 @@ pub struct Torrent {
     pub announce_url: Option<String>,
     pub raw_bytes: Vec<u8>,
 }
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct TorrentFile {
     pub announce: Option<String>,
     pub info: Info,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Info {
     pub name: Option<String>,
     #[serde(rename = "piece length")]
@@ -30,7 +31,7 @@ pub struct Info {
     pub pieces: ByteBuf,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct File {
     pub length: u64,
     pub possible_path: Option<Vec<String>>,
