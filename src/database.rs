@@ -122,7 +122,6 @@ mod test {
     #[test]
     fn test_init_tables() {
         let db = init_test_conn();
-        init_tables(&db).unwrap();
         //does our table exist
         let mut stmt = db
             .conn
@@ -150,6 +149,7 @@ mod test {
             name,
             db_name,
         };
+        init_tables(&db).unwrap();
         db
     }
 
@@ -160,6 +160,13 @@ mod test {
         let torrent = parse_torrent_file(file_name).unwrap();
 
         save_torrent_file(&torrent, &db).unwrap();
+
+        let torrents = list_torrent_files(&db).unwrap();
+        assert_eq!(1, torrents.len());
+
+        torrents
+            .iter()
+            .for_each(|torrent| info!("This is the name of the torrent: {}", torrent.name));
 
         let retrieved_torrent = select_torrent_file(file_name, &db).unwrap();
         assert_eq!(torrent, retrieved_torrent);
