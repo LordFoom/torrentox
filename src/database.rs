@@ -1,13 +1,8 @@
-use anyhow::anyhow;
+use crate::error_types::DbError;
+use crate::model::Torrent;
 use color_eyre::eyre::{Result, WrapErr};
 use rusqlite::params;
 use rusqlite::Connection;
-use rusqlite::Error as RusqliteError;
-
-use crate::error_types::AppError;
-use crate::error_types::DbError;
-use crate::error_types::TorrentParseError;
-use crate::model::{Torrent, TorrentFile};
 
 ///Holder of the DB Connection information
 pub struct DbConnection {
@@ -94,6 +89,8 @@ pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
 ///Use the name. Get the file
 pub fn select_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
     let sql = "SELECT name, file_path, announce_url, torrent_file_raw FROM torrent where name = ?1";
+    info!("Our select statment: {sql}");
+    info!("The name we will use: {name}");
     db.conn
         .query_row(sql, params![name], |row| {
             let torrent_file_raw: Vec<u8> = row.get(3)?;
