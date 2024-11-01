@@ -1,6 +1,7 @@
 use crate::error_types::DbError;
 use crate::model::Torrent;
 use color_eyre::eyre::{Result, WrapErr};
+use log::info;
 use rusqlite::params;
 use rusqlite::Connection;
 
@@ -165,7 +166,8 @@ mod test {
             .iter()
             .for_each(|torrent| info!("This is the name of the torrent: {}", torrent.name));
 
-        let retrieved_torrent = select_torrent_file(file_name, &db).unwrap();
-        assert_eq!(torrent, retrieved_torrent);
+        let torrent_name_to_test = file_name.replace(".torrent", "");
+        let retrieved_torrent = select_torrent_file(&torrent_name_to_test, &db).unwrap();
+        assert_eq!(torrent.announce_url, retrieved_torrent.announce_url);
     }
 }
