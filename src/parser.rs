@@ -36,6 +36,12 @@ pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
     Ok(torrent)
 }
 
+pub fn parse_info_hash(torrent: &Torrent) -> Result<Vec<u8>> {
+    let info_hash = Vec::new();
+
+    Ok(info_hash)
+}
+
 #[cfg(test)]
 mod test {
     #[allow(unused_imports)]
