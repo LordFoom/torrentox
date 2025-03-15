@@ -10,6 +10,7 @@ use clap::Parser;
 use args::AppArgs;
 use color_eyre::eyre::Result;
 use database::{init_tables, save_torrent_file, DbConnection};
+use log::debug;
 use log::LevelFilter;
 use log4rs::{
     append::file::FileAppender,
@@ -73,10 +74,18 @@ fn main() -> Result<()> {
     init_tables(&db)?;
 
     let torrent_files = args.torrent_files;
+    let client = reqwest::Client::new();
     for torrent_file_path in torrent_files {
         let torrent = parse_torrent_file(&torrent_file_path)?;
         save_torrent_file(&torrent, &db)?;
+        let announce_url = torrent
+            .torrent_file
+            .announce
+            .unwrap_or("Did mot find the announce url".to_owned());
+        debug!("announce url: {announce_url}");
+        let response = client.get(announce_url)?;
     }
+    //connect to the announce url
 
     Ok(())
 }
