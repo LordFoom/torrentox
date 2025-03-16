@@ -36,3 +36,13 @@ pub struct File {
     pub length: u64,
     pub possible_path: Option<Vec<String>>,
 }
+
+///Request to the announce url. Note it will be used in an Http GET request
+pub struct TrackerAnnounceRequest {
+    ///The 20 byte sha1 hash of the bencoded form of the info value from the metainfo file.
+    ///Note that this is a substring of the metainfo file. Don't forget to URL-encode this.
+    info_hash: Vec<u8>,
+    peer_id: String,
+    ip: Option<String>,
+    port_number: u64,
+}
