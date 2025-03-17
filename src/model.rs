@@ -38,6 +38,8 @@ pub struct File {
 }
 
 ///Request to the announce url. Note it will be used in an Http GET request
+///Question do we need to implement serde for this as we are using this for http...
+#[derive(Serialize, Deserialize)]
 pub struct TrackerAnnounceRequest {
     ///The 20 byte sha1 hash of the bencoded form of the info value from the metainfo file.
     ///Note that this is a substring of the metainfo file. Don't forget to URL-encode this.
@@ -45,4 +47,23 @@ pub struct TrackerAnnounceRequest {
     peer_id: String,
     ip: Option<String>,
     port_number: u64,
+    uploaded: u128,
+    downloaded: u128,
+    left: u128,
+    event: Option<String>,
+    numwant: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TrackerAnnounceResponse {
+    ///Number of seconds the downloader should wait between regular rerequests.
+    pub interval: usize,
+    pub peers: Vec<Peer>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Peer {
+    id: String,
+    ip: String,
+    port: u64,
 }
