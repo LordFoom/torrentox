@@ -3,11 +3,12 @@ use colored::Colorize;
 use log::debug;
 #[allow(unused_imports)]
 use log::info;
+use sha1::{Digest, Sha1};
 use std::{fs::File, io::Read};
 
 use crate::{
     error_types::TorrentParseError,
-    model::{Torrent, TorrentFile},
+    model::{InfoHash, Torrent, TorrentFile},
 };
 
 pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
@@ -36,9 +37,11 @@ pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
     Ok(torrent)
 }
 
-pub fn parse_info_hash(torrent: &Torrent) -> Result<Vec<u8>> {
-    let info_hash = Vec::new();
-
+pub fn parse_info_hash(torrent: &Torrent) -> Result<InfoHash> {
+    let info_bytes = serde_bencode::to_bytes(&torrent.torrent_file.info)?;
+    let info_digest = Sha1::digest(info_bytes);
+    let mut info_hash = [0; 20];
+    info_hash.copy_from_slice(&info_digest);
     Ok(info_hash)
 }
 

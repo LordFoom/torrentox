@@ -67,3 +67,5 @@ pub struct Peer {
     ip: String,
     port: u64,
 }
+
+pub type InfoHash = [u8; 20];

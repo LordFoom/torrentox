@@ -83,6 +83,7 @@ fn main() -> Result<()> {
             .announce
             .unwrap_or("Did mot find the announce url".to_owned());
         debug!("announce url: {announce_url}");
+        //create our request
         let response = client.get(announce_url);
     }
     //connect to the announce url
