@@ -6,10 +6,7 @@ use log::info;
 use sha1::{Digest, Sha1};
 use std::{fs::File, io::Read};
 
-use crate::{
-    error_types::TorrentParseError,
-    model::{InfoHash, Torrent, TorrentFile},
-};
+use crate::model::{Info, InfoHash, Torrent, TorrentFile};
 
 pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
     debug!("Parsing {file_name}");
@@ -37,8 +34,8 @@ pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
     Ok(torrent)
 }
 
-pub fn parse_info_hash(torrent: &Torrent) -> Result<InfoHash> {
-    let info_bytes = serde_bencode::to_bytes(&torrent.torrent_file.info)?;
+pub fn parse_info_hash(metadata_info: &Info) -> Result<InfoHash> {
+    let info_bytes = serde_bencode::to_bytes(metadata_info)?;
     let info_digest = Sha1::digest(info_bytes);
     let mut info_hash = [0; 20];
     info_hash.copy_from_slice(&info_digest);
@@ -61,7 +58,14 @@ mod test {
         assert_ne!(None, torrent.torrent_file.info.name);
         info!(
             "Name of this torrent info: {}",
-            torrent.torrent_file.info.name.unwrap().cyan().bold()
+            torrent
+                .torrent_file
+                .info
+                .name
+                .as_ref()
+                .unwrap()
+                .cyan()
+                .bold()
         );
         info!(
             "This is the torrent file piece length: {}",
@@ -72,7 +76,7 @@ mod test {
 
         let mut files_found = false;
         let mut length_found = false;
-        if let Some(files) = torrent.torrent_file.info.possible_files {
+        if let Some(files) = torrent.torrent_file.info.clone().possible_files {
             info!("Had a files element");
             info!(
                 "We had {} files in the files element",
@@ -113,7 +117,11 @@ mod test {
             torrent
                 .torrent_file
                 .announce
+                .clone()
                 .unwrap_or_else(|| "No announce url".to_owned())
         );
+
+        let md_info = torrent.clone().torrent_file.info;
+        parse_info_hash(&md_info).unwrap();
     }
 }

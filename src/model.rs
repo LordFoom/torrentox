@@ -1,7 +1,7 @@
 use serde_bytes::ByteBuf;
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Torrent {
     pub torrent_file: TorrentFile,
     pub name: String,
