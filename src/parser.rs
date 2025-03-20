@@ -122,6 +122,7 @@ mod test {
         );
 
         let md_info = torrent.clone().torrent_file.info;
-        parse_info_hash(&md_info).unwrap();
+        let parse_info_hash = parse_info_hash(&md_info).unwrap();
+        assert_eq!(20, parse_info_hash.len());
     }
 }

@@ -105,7 +105,7 @@ pub fn select_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
                 raw_bytes: torrent_file_raw,
             })
         })
-        .wrap_err("")
+        .wrap_err("Error retrieving the torrent by name")
 }
 
 #[cfg(test)]
