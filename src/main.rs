@@ -5,6 +5,7 @@ mod error_types;
 mod log_init_for_tests;
 mod model;
 mod parser;
+use api::construct_query_map;
 use clap::Parser;
 
 //use anyhow::Result;
@@ -82,8 +83,12 @@ fn main() -> Result<()> {
         let announce_url = torrent
             .torrent_file
             .announce
+            .clone()
             .unwrap_or("Did mot find the announce url".to_owned());
         debug!("announce url: {announce_url}");
+        //construct the query parameter map
+        let torrent_file = &torrent.torrent_file;
+        construct_query_map(torrent_file);
         //create our request
         let response = client.get(announce_url);
     }
