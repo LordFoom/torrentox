@@ -21,5 +21,6 @@ serde_bytes = "0.11.15"
 serde_derive = "1.0.210"
 sha-1 = "0.10.1"
 thiserror = "1.0.63"
+urlencoding = "2.1.3"
 
 
