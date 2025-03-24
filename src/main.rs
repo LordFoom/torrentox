@@ -1,3 +1,4 @@
+mod api;
 mod args;
 mod database;
 mod error_types;
