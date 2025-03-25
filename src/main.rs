@@ -5,6 +5,8 @@ mod error_types;
 mod log_init_for_tests;
 mod model;
 mod parser;
+use std::collections::HashMap;
+
 use api::construct_query_map;
 use clap::Parser;
 
@@ -76,6 +78,8 @@ fn main() -> Result<()> {
     init_tables(&db)?;
 
     let torrent_files = args.torrent_files;
+    //TODO these should come from the db and be stored there
+    let mut peer_id_cache: HashMap<String, String> = HashMap::new();
     let client = reqwest::Client::new();
     for torrent_file_path in torrent_files {
         let torrent = parse_torrent_file(&torrent_file_path)?;
@@ -88,13 +92,25 @@ fn main() -> Result<()> {
         debug!("announce url: {announce_url}");
         //construct the query parameter map
         let torrent_file = &torrent.torrent_file;
-        construct_query_map(torrent_file);
+        let peer_id = get_or_create_peer_id(&torrent_file, &mut peer_id_cache)?;
+        construct_query_map(&torrent_file, peer_id);
         //create our request
         let response = client.get(announce_url);
     }
     //connect to the announce url
 
     Ok(())
+}
+
+///If the torrentfile has a peer_id in the map, return it.
+///Otherwise create a peer id and put it in the map, with the torrentfile name as the key
+fn get_or_create_peer_id(
+    torrent_file: &&model::TorrentFile,
+    peer_id_cach: &mut HashMap<String, String>,
+) -> Result<String> {
+    let mut ret_string = String::from("Neverchanger");
+
+    Ok(ret_string)
 }
 
 fn init_db() -> Result<DbConnection> {
