@@ -8,6 +8,7 @@ mod parser;
 use std::collections::HashMap;
 
 use api::construct_query_map;
+use clap::crate_version;
 use clap::Parser;
 
 //use anyhow::Result;
@@ -108,7 +109,12 @@ fn get_or_create_peer_id(
     torrent_file: &&model::TorrentFile,
     peer_id_cach: &mut HashMap<String, String>,
 ) -> Result<String> {
-    let mut ret_string = String::from("Neverchanger");
+    //https://www.bittorrent.org/beps/bep_0020.html
+    //first we identify ourselves - THE OX RIDES AGAIN!!
+    //get our version numbers
+    let version = crate_version!();
+    //let (major, minor, tiny)
+    let mut ret_string = String::from("-OX{major}-{minor}-{tiny}-");
 
     Ok(ret_string)
 }
