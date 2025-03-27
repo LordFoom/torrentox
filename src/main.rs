@@ -113,8 +113,15 @@ fn get_or_create_peer_id(
     //first we identify ourselves - THE OX RIDES AGAIN!!
     //get our version numbers
     let version = crate_version!();
-    //let (major, minor, tiny)
-    let mut ret_string = String::from("-OX{major}-{minor}-{tiny}-");
+    //split it into the major/minor/tiny
+    let version: Vec<&str> = version.split(".").collect();
+    let major = version.get(0).unwrap_or(&"1");
+    let minor = version.get(0).unwrap_or(&"0");
+    let tiny = version.get(0).unwrap_or(&"0");
+    let mut ret_string = format!("-OX{}-{}-{}-", major, minor, tiny);
+    //how many more bytes do i need, count the lenght
+    let remaining_chars = 20 - ret_string.len();
+    for _ in 0..remaining_chars {}
 
     Ok(ret_string)
 }
