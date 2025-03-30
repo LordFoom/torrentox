@@ -94,7 +94,7 @@ fn main() -> Result<()> {
         debug!("announce url: {announce_url}");
         //construct the query parameter map
         let torrent_file = &torrent.torrent_file;
-        let peer_id = get_or_create_peer_id(&mut peer_id_cache)?;
+        let peer_id = get_or_create_peer_id(torrent_file.name, &mut peer_id_cache)?;
         construct_query_map(&torrent_file, peer_id);
         //create our request
         let response = client.get(announce_url);
@@ -102,35 +102,6 @@ fn main() -> Result<()> {
     //connect to the announce url
 
     Ok(())
-}
-
-const UNIVERSE_OF_CHARS: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-///If the torrentfile has a peer_id in the map, return it.
-///Otherwise create a peer id and put it in the map, with the torrentfile name as the key
-fn get_or_create_peer_id(peer_id_cach: &mut HashMap<String, String>) -> Result<String> {
-    //https://www.bittorrent.org/beps/bep_0020.html
-    //first we identify ourselves - THE OX RIDES AGAIN!!
-    //get our version numbers
-    let version = crate_version!();
-    //split it into the major/minor/tiny
-    let version: Vec<&str> = version.split(".").collect();
-    let major = version.get(0).unwrap_or(&"1");
-    let minor = version.get(0).unwrap_or(&"0");
-    let tiny = version.get(0).unwrap_or(&"0");
-    let mut peer_id = format!("-OX{}-{}-{}-", major, minor, tiny);
-    //how many more bytes do i need, count the lenght
-    let remaining_chars = 20 - peer_id.len();
-    let upper_bound = UNIVERSE_OF_CHARS.len();
-    let mut rnd = rand::rng();
-
-    for _ in 0..remaining_chars {
-        //select a random character from our universe
-        let char_num = rnd.random_range(0..upper_bound);
-        let the_char = UNIVERSE_OF_CHARS.chars().nth(char_num).unwrap_or('?');
-        peer_id.push(the_char);
-    }
-
-    Ok(peer_id)
 }
 
 fn init_db() -> Result<DbConnection> {

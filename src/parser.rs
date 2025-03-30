@@ -1,10 +1,12 @@
+use clap::crate_version;
 use color_eyre::eyre::Result;
 use colored::Colorize;
 use log::debug;
 #[allow(unused_imports)]
 use log::info;
+use rand::Rng;
 use sha1::{Digest, Sha1};
-use std::{fs::File, io::Read};
+use std::{collections::HashMap, fs::File, io::Read};
 
 use crate::model::{Info, InfoHash, Torrent, TorrentFile};
 
@@ -40,6 +42,43 @@ pub fn parse_info_hash(metadata_info: &Info) -> Result<InfoHash> {
     let mut info_hash = [0; 20];
     info_hash.copy_from_slice(&info_digest);
     Ok(info_hash)
+}
+
+const UNIVERSE_OF_CHARS: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+///If the torrentfile has a peer_id in the map, return it.
+///Otherwise create a peer id and put it in the map, with the torrentfile name as the key
+pub fn get_or_create_peer_id(
+    torrent_file_name: String,
+    peer_id_cach: &mut HashMap<String, String>,
+) -> Result<String> {
+    if let Some(peer_id) = peer_id_cach.get(&torrent_file_name) {
+        return Ok(peer_id.to_owned());
+    }
+    //https://www.bittorrent.org/beps/bep_0020.html
+    //first we identify ourselves - THE OX RIDES AGAIN!!
+    //get our version numbers
+    let version = crate_version!();
+    //split it into the major/minor/tiny
+    let version: Vec<&str> = version.split(".").collect();
+    let major = version.get(0).unwrap_or(&"1");
+    let minor = version.get(0).unwrap_or(&"0");
+    let tiny = version.get(0).unwrap_or(&"0");
+    let mut peer_id = format!("-OX{}-{}-{}-", major, minor, tiny);
+    //how many more bytes do i need, count the lenght
+    let remaining_chars = 20 - peer_id.len();
+    let upper_bound = UNIVERSE_OF_CHARS.len();
+    let mut rnd = rand::rng();
+
+    for _ in 0..remaining_chars {
+        //select a random character from our universe
+        let char_num = rnd.random_range(0..upper_bound);
+        let the_char = UNIVERSE_OF_CHARS.chars().nth(char_num).unwrap_or('?');
+        peer_id.push(the_char);
+    }
+    //never again will we , the free, be subjected to the unfree freeing of the overfree
+    peer_id_cach.insert(torrent_file_name, peer_id.to_string());
+
+    Ok(peer_id)
 }
 
 #[cfg(test)]
