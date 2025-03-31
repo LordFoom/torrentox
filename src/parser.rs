@@ -91,7 +91,7 @@ mod test {
 
     #[test]
     pub fn test_parse_torrent_file() {
-        info!("Test is starting!");
+        info!("Test of torrent file parsing is starting!");
         let file_name = "Fedora-KDE-Live-x86_64-40.torrent";
         let torrent = parse_torrent_file(file_name).unwrap();
         assert_ne!(None, torrent.torrent_file.info.name);
@@ -164,4 +164,7 @@ mod test {
         let parse_info_hash = parse_info_hash(&md_info).unwrap();
         assert_eq!(20, parse_info_hash.len());
     }
+
+    #[test]
+    pub fn test_get_or_create_peer_id() {}
 }
