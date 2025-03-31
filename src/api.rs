@@ -14,6 +14,10 @@ pub fn construct_query_map(
     let info_hash_str = str::from_utf8(&info_hash)?;
     let v = urlencoding::encode(info_hash_str);
     query_params.insert("info_hash".to_string(), v.to_string());
+    query_params.insert(
+        torrent_file.info.name.unwrap_or("unknown".to_string()),
+        peer_id,
+    );
 
     Ok(query_params)
 }
