@@ -48,10 +48,10 @@ const UNIVERSE_OF_CHARS: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTU
 ///If the torrentfile has a peer_id in the map, return it.
 ///Otherwise create a peer id and put it in the map, with the torrentfile name as the key
 pub fn get_or_create_peer_id(
-    torrent_file_name: String,
+    torrent_file_name: &str,
     peer_id_cach: &mut HashMap<String, String>,
 ) -> Result<String> {
-    if let Some(peer_id) = peer_id_cach.get(&torrent_file_name) {
+    if let Some(peer_id) = peer_id_cach.get(torrent_file_name) {
         return Ok(peer_id.to_owned());
     }
     //https://www.bittorrent.org/beps/bep_0020.html
@@ -166,5 +166,21 @@ mod test {
     }
 
     #[test]
-    pub fn test_get_or_create_peer_id() {}
+    pub fn test_get_or_create_peer_id() {
+        //We ask for an id whn we do not have one
+        let torrent_file_name = "foom.torrent";
+        let mut cache: HashMap<String, String> = HashMap::new();
+        let id = get_or_create_peer_id(torrent_file_name, &mut cache).unwrap();
+        info!("Id we received back: {}", id);
+        //We get one back
+        assert_eq!(1, cache.len());
+        //We also have it in the cache
+        let cache_id = cache.get(torrent_file_name).unwrap_or(&"wrongo".to_owned());
+        assert_eq!(id, cache_id.to_owned());
+
+        //
+        //we ask for an id when we have one
+        //we get the one that was in the cache back
+        //there is no other one in the cache
+    }
 }
