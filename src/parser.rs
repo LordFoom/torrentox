@@ -76,7 +76,7 @@ pub fn get_or_create_peer_id(
         peer_id.push(the_char);
     }
     //never again will we , the free, be subjected to the unfree freeing of the overfree
-    peer_id_cach.insert(torrent_file_name, peer_id.to_string());
+    peer_id_cach.insert(torrent_file_name.to_string(), peer_id.to_string());
 
     Ok(peer_id)
 }
@@ -175,12 +175,22 @@ mod test {
         //We get one back
         assert_eq!(1, cache.len());
         //We also have it in the cache
-        let cache_id = cache.get(torrent_file_name).unwrap_or(&"wrongo".to_owned());
+        let default = "wrongo".to_owned();
+        let cache_id = cache.get(torrent_file_name).unwrap_or(&default);
         assert_eq!(id, cache_id.to_owned());
 
-        //
         //we ask for an id when we have one
+        cache.insert(
+            "test.whatnot".to_owned(),
+            "cache rules everything around me".to_owned(),
+        );
         //we get the one that was in the cache back
+        let new_id = get_or_create_peer_id("test.whatnot", &mut cache).unwrap();
+
         //there is no other one in the cache
+        let second_torrent_name = "test.whatnot";
+        let get_or_created_peer_id = cache.get(second_torrent_name).unwrap_or(&default);
+        assert_eq!(&new_id, get_or_created_peer_id);
+        //
     }
 }

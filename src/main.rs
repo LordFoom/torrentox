@@ -8,7 +8,6 @@ mod parser;
 use std::collections::HashMap;
 
 use api::construct_query_map;
-use clap::crate_version;
 use clap::Parser;
 
 //use anyhow::Result;
@@ -24,7 +23,6 @@ use log4rs::{
     Config,
 };
 use parser::parse_torrent_file;
-use rand::Rng;
 use rusqlite::Connection;
 
 fn init(verbose: bool) -> Result<()> {
@@ -94,8 +92,13 @@ fn main() -> Result<()> {
         debug!("announce url: {announce_url}");
         //construct the query parameter map
         let torrent_file = &torrent.torrent_file;
-        let peer_id = get_or_create_peer_id(torrent_file.name, &mut peer_id_cache)?;
-        construct_query_map(&torrent_file, peer_id);
+        let name = torrent_file
+            .info
+            .name
+            .clone()
+            .unwrap_or("wrongo".to_owned());
+        let peer_id = parser::get_or_create_peer_id(&name, &mut peer_id_cache)?;
+        let query_map = construct_query_map(&torrent_file, peer_id)?;
         //create our request
         let response = client.get(announce_url);
     }
