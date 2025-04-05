@@ -61,8 +61,8 @@ pub fn get_or_create_peer_id(
     //split it into the major/minor/tiny
     let version: Vec<&str> = version.split(".").collect();
     let major = version.get(0).unwrap_or(&"1");
-    let minor = version.get(0).unwrap_or(&"0");
-    let tiny = version.get(0).unwrap_or(&"0");
+    let minor = version.get(1).unwrap_or(&"0");
+    let tiny = version.get(2).unwrap_or(&"0");
     let mut peer_id = format!("-OX{}-{}-{}-", major, minor, tiny);
     //how many more bytes do i need, count the lenght
     let remaining_chars = 20 - peer_id.len();
@@ -174,6 +174,8 @@ mod test {
         info!("Id we received back: {}", id);
         //We get one back
         assert_eq!(1, cache.len());
+        assert_eq!(20, id.len());
+        assert!(id.starts_with("-OX"));
         //We also have it in the cache
         let default = "wrongo".to_owned();
         let cache_id = cache.get(torrent_file_name).unwrap_or(&default);
