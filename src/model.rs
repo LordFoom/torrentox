@@ -11,6 +11,7 @@ pub struct Torrent {
 }
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TorrentFile {
+    ///Tracker url, right?
     pub announce: Option<String>,
     pub info: Info,
 }

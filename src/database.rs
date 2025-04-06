@@ -14,6 +14,7 @@ pub struct DbConnection {
 }
 ///Create necessary torrent tables iff not already created.
 pub fn init_tables(db: &DbConnection) -> Result<()> {
+    //TODO: add (bytes)downloaded (bytes)left fields
     let create_table = "CREATE TABLE IF NOT EXISTS torrent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, file_path TEXT, announce_url TEXT, torrent_file_raw BLOB) ";
     db.conn.execute(create_table, [])?;
     Ok(())

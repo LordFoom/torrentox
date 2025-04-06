@@ -20,7 +20,11 @@ pub fn construct_query_map(
         .name
         .clone()
         .unwrap_or("unknown".to_string());
-    query_params.insert(torrent_file_name, peer_id);
+    query_params.insert("peer_id".to_string(), peer_id);
 
+    //TODO get this from config
+    query_params.insert("port".to_string(), "6881".to_string());
+    //TODO this needs to come from DB
+    query_params.insert("downloaded", "0")
     Ok(query_params)
 }
