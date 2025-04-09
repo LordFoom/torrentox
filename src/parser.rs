@@ -32,6 +32,9 @@ pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
         file_path: file_name.to_owned(),
         raw_bytes: file_bytes,
         announce_url: None,
+        downloaded: 0,
+        uploaded: 0,
+        left: 0,
     };
     Ok(torrent)
 }

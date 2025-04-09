@@ -90,15 +90,7 @@ fn main() -> Result<()> {
             .clone()
             .unwrap_or("Did mot find the announce url".to_owned());
         debug!("announce url: {announce_url}");
-        //construct the query parameter map
-        let torrent_file = &torrent.torrent_file;
-        let name = torrent_file
-            .info
-            .name
-            .clone()
-            .unwrap_or("wrongo".to_owned());
-        let peer_id = parser::get_or_create_peer_id(&name, &mut peer_id_cache)?;
-        let query_map = construct_query_map(&torrent_file, peer_id)?;
+        let query_map = construct_query_map(&torrent, peer_id)?;
         //create our request
         let response = client.get(announce_url);
     }

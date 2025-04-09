@@ -1,13 +1,22 @@
 use std::{collections::HashMap, str};
 
-use crate::{model::TorrentFile, parser};
+use crate::{model::Torrent, parser};
 use color_eyre::eyre::Result;
+use eyre::Ok;
 
 ///The call to the announce url is an HTTP request
 pub fn construct_query_map(
-    torrent_file: &TorrentFile,
-    peer_id: String,
+    torrent: &Torrent,
+    peer_id_cache: &mut HashMap<String, String>,
 ) -> Result<HashMap<String, String>> {
+    //here we get the peer_id
+    let torrent_file = &torrent.torrent_file;
+    let name = torrent_file
+        .info
+        .name
+        .clone()
+        .unwrap_or("wrongo".to_owned());
+    let peer_id = parser::get_or_create_peer_id(&name, peer_id_cache)?;
     //we construct a map of param = > value
     let mut query_params = HashMap::new();
     let info_hash = parser::parse_info_hash(&torrent_file.info)?;
@@ -26,7 +35,7 @@ pub fn construct_query_map(
     query_params.insert("port".to_string(), "6881".to_string());
     //TODO this needs to come from DB
     query_params.insert("downloaded".to_string(), "0".to_string());
-    query_params.insert("left".to_string(), "0")
+    query_params.insert("left".to_string(), torrent.left.to_string());
 
     Ok(query_params)
 }
