@@ -9,9 +9,9 @@ pub struct Torrent {
     pub announce_url: Option<String>,
     pub raw_bytes: Vec<u8>,
     ///left == size-downloaded
-    pub size: u128,
-    pub downloaded: u128,
-    pub uploaded: u128,
+    pub size: u64,
+    pub downloaded: u64,
+    pub uploaded: u64,
 }
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TorrentFile {

@@ -26,15 +26,30 @@ pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
         "Ox".truecolor(255, 165, 0).bold(),
         "again!!!".magenta().bold().italic(),
     );
+    let mut name = torrent_file
+        .info
+        .name
+        .clone()
+        .unwrap_or("Unknown to foom".to_string());
+
+    name.push_str(" Top Level Container");
+    let size = if let Some(lngth) = torrent_file.info.possible_length {
+        lngth
+    } else if let Some(files) = torrent_file.info.possible_files.clone() {
+        files.iter().map(|f| f.length).sum()
+    } else {
+        0
+    };
+
     let torrent = Torrent {
         torrent_file,
-        name: "Test torrent".to_owned(),
+        name,
         file_path: file_name.to_owned(),
         raw_bytes: file_bytes,
         announce_url: None,
         downloaded: 0,
         uploaded: 0,
-        size: 0,
+        size,
     };
     Ok(torrent)
 }
