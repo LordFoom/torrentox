@@ -8,7 +8,8 @@ pub struct Torrent {
     pub file_path: String,
     pub announce_url: Option<String>,
     pub raw_bytes: Vec<u8>,
-    pub left: u128,
+    ///left == size-downloaded
+    pub size: u128,
     pub downloaded: u128,
     pub uploaded: u128,
 }

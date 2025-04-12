@@ -90,7 +90,7 @@ fn main() -> Result<()> {
             .clone()
             .unwrap_or("Did mot find the announce url".to_owned());
         debug!("announce url: {announce_url}");
-        let query_map = construct_query_map(&torrent, peer_id)?;
+        let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
         //create our request
         let response = client.get(announce_url);
     }

@@ -15,7 +15,7 @@ pub struct DbConnection {
 ///Create necessary torrent tables iff not already created.
 pub fn init_tables(db: &DbConnection) -> Result<()> {
     //TODO: add (bytes)downloaded (bytes)left fields
-    let create_table = "CREATE TABLE IF NOT EXISTS torrent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, file_path TEXT, announce_url TEXT, torrent_file_raw BLOB, left INTEGER, downloaded INTEGER, uploaded INTEGER) ";
+    let create_table = "CREATE TABLE IF NOT EXISTS torrent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, file_path TEXT, announce_url TEXT, torrent_file_raw BLOB, file_size INTEGER, downloaded INTEGER, uploaded INTEGER) ";
     db.conn.execute(create_table, [])?;
     Ok(())
 }
@@ -75,6 +75,14 @@ pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
                 announce_url: row.get(2)?,
                 torrent_file,
                 raw_bytes: torrent_file_raw,
+                size: torrent_file
+                    .info
+                    .possible_length
+                    .unwrap_or_else(|| if let Some(files) == torrent_file.info.possible_files {
+                        files.iter().
+                    }),
+                downloaded: todo!(),
+                uploaded: todo!(),
             })
         })
         .wrap_err("Failed to map query result")?;
@@ -90,7 +98,7 @@ pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
 
 ///Use the name. Get the file
 pub fn select_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
-    let sql = "SELECT name, file_path, announce_url, torrent_file_raw FROM torrent where name = ?1";
+    let sql = "SELECT name, file_path, announce_url, torrent_file_raw, downloaded, uploaded, size FROM torrent where name = ?1";
     info!("Our select statment: {sql}");
     info!("The name we will use: {name}");
     db.conn
@@ -104,6 +112,9 @@ pub fn select_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
                 announce_url: row.get(2)?,
                 torrent_file,
                 raw_bytes: torrent_file_raw,
+                downloaded: row.get(4)?,
+                uploaded: row.get(5)?,
+                size: row.get(5)?,
             })
         })
         .wrap_err("Error retrieving the torrent by name")
