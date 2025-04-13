@@ -46,43 +46,25 @@ pub fn save_torrent_file(torrent: &Torrent, db: &DbConnection) -> Result<()> {
 }
 
 pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
-    let sql = "SELECT name, file_path, announce_url, torrent_file_raw FROM torrent";
+    let sql = "SELECT name, file_path, announce_url, torrent_file_raw, size, downloaded, uploaded FROM torrent";
     let mut stmt = db
         .conn
         .prepare(sql)
         .map_err(DbError::from)
         .wrap_err("Failed to prepare the list torrent file statement")?;
-    //let torrent_file_list = stmt.query_map([], |row| {
-    //    let torrent_file_raw: Vec<u8> = row.get(3)?;
-    //    let torrent_file = serde_bencode::from_bytes(&torrent_file_raw)
-    //        .map_err("Failed to create torrent file from db bytes")?;
-    //    //let torrent_file =
-    //    //    serde_bencode::from_bytes(&torrent_file_raw).map_err(|err| rusqlite::Error(err));
-    //    //(row.get(0), row.get(1), row.get(2), row.get(3)));
-    //});
-    //let vec = Vec::new();
-    //Ok(vec)
     let torrent_file_list = stmt
         .query_map([], |row| {
             let torrent_file_raw: Vec<u8> = row.get(3)?;
             let torrent_file = serde_bencode::from_bytes(&torrent_file_raw).unwrap();
-            //.map_err(DbError::from)
-            //.wrap_err("Failed to deserialize torrent_file_raw")?;
-
             Ok(Torrent {
                 name: row.get(0)?,
                 file_path: row.get(1)?,
                 announce_url: row.get(2)?,
                 torrent_file,
                 raw_bytes: torrent_file_raw,
-                size: torrent_file
-                    .info
-                    .possible_length
-                    .unwrap_or_else(|| if let Some(files) == torrent_file.info.possible_files {
-                        files.iter().
-                    }),
-                downloaded: todo!(),
-                uploaded: todo!(),
+                size: row.get(4)?,
+                downloaded: row.get(5)?,
+                uploaded: row.get(6)?,
             })
         })
         .wrap_err("Failed to map query result")?;
