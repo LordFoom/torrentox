@@ -39,7 +39,7 @@ pub fn construct_query_map(
     //TODO this needs to come from DB
     query_params.insert("downloaded".to_string(), torrent.downloaded.to_string());
     query_params.insert("uploaded".to_string(), torrent.uploaded.to_string());
-    query_params.insert("left".to_string(), torrent.left.to_string());
+    query_params.insert("left".to_string(), left.to_string());
 
     Ok(query_params)
 }
