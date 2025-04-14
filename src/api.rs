@@ -31,6 +31,9 @@ pub fn construct_query_map(
         .unwrap_or("unknown".to_string());
     query_params.insert("peer_id".to_string(), peer_id);
 
+    let size = parser::get_size(torrent_file);
+    //is this true with size always?
+    let left = size - torrent.downloaded;
     //TODO get this from config
     query_params.insert("port".to_string(), "6881".to_string());
     //TODO this needs to come from DB
