@@ -70,7 +70,7 @@ fn init(verbose: bool) -> Result<()> {
 ///TODO add downloading from peer
 ///TODO seeding
 ///TODO resume downloading partially downloaded file
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     let args = AppArgs::parse();
     init(args.verbose)?;
@@ -94,7 +94,7 @@ async fn main() -> Result<()> {
         let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
         //create our request
         let response = client.get(announce_url).query(&query_map).send().await?;
-        debug!("Our response: {?:}", response);
+        debug!("Our response: {:?}", response);
     }
     //connect to the announce url
 
