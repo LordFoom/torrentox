@@ -83,7 +83,7 @@ pub fn get_or_create_peer_id(
     let version = crate_version!();
     //split it into the major/minor/tiny
     let version: Vec<&str> = version.split(".").collect();
-    let major = version.get(0).unwrap_or(&"1");
+    let major = version.first().unwrap_or(&"1");
     let minor = version.get(1).unwrap_or(&"0");
     let tiny = version.get(2).unwrap_or(&"0");
     let mut peer_id = format!("-OX{}-{}-{}-", major, minor, tiny);
