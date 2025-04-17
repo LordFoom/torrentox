@@ -1,6 +1,11 @@
 use std::{collections::HashMap, str};
+use log::debug
 
-use crate::{model::Torrent, parser};
+use crate::{
+    database::{self, DbConnection},
+    model::Torrent,
+    parser,
+};
 use color_eyre::eyre::Result;
 use eyre::Ok;
 
@@ -42,4 +47,35 @@ pub fn construct_query_map(
     query_params.insert("left".to_string(), left.to_string());
 
     Ok(query_params)
+}
+
+pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -> Result<()> {
+    let mut peer_id_cache: HashMap<String, String> = HashMap::new();
+    let client = reqwest::Client::new();
+    for torrent_file_path in torrent_files {
+        let torrent = parser::parse_torrent_file(&torrent_file_path)?;
+        database::save_torrent_file(&torrent, &db)?;
+        let announce_url = torrent
+            .torrent_file
+            .announce
+            .clone()
+            .unwrap_or("Did mot find the announce url".to_owned());
+        debug!("announce url: {announce_url}");
+        let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
+        //create our request
+        let response = client.get(announce_url).query(&query_map).send().await?;
+        debug!("Our response: {:?}", response);
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod test{
+    use super::*;
+    #[test]
+    fn test_torrent_the_files() {
+        let torrent_file_paths = vec!["./Fedora-KDE-Live-x86_64-40.torrent"];
+        let db = database::test::init_test_conn();
+
+    }
 }
