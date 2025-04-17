@@ -103,7 +103,7 @@ pub fn select_torrent_file(name: &str, db: &DbConnection) -> Result<Torrent> {
 }
 
 #[cfg(test)]
-mod test {
+pub mod test {
     use colored::*;
     use log::info;
 
@@ -132,7 +132,7 @@ mod test {
         assert!(tables.contains(&String::from("torrent")));
     }
 
-    fn init_test_conn() -> DbConnection {
+    pub fn init_test_conn() -> DbConnection {
         let conn = Connection::open_in_memory().unwrap();
         let name = String::from("Foom test name");
         let db_name = String::from("Foom db name but it is in memory tee and, indeed, hee");
