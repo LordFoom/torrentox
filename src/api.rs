@@ -1,5 +1,5 @@
+use log::debug;
 use std::{collections::HashMap, str};
-use log::debug
 
 use crate::{
     database::{self, DbConnection},
@@ -70,12 +70,12 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
 }
 
 #[cfg(test)]
-mod test{
+mod test {
     use super::*;
-    #[test]
-    fn test_torrent_the_files() {
-        let torrent_file_paths = vec!["./Fedora-KDE-Live-x86_64-40.torrent"];
+    #[tokio::test]
+    async fn test_torrent_the_files() {
+        let torrent_files = vec!["./Fedora-KDE-Live-x86_64-40.torrent".to_string()];
         let db = database::test::init_test_conn();
-
+        torrent_the_files(&torrent_files, &db).await.unwrap();
     }
 }
