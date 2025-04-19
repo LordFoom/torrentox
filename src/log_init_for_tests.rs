@@ -6,7 +6,7 @@ fn init_logging() {
     use log4rs::config::{Appender, Config, Root};
     use log4rs::encode::pattern::PatternEncoder;
     let stdout = ConsoleAppender::builder()
-        .encoder(Box::new(PatternEncoder::new("{d} [{l}] {M} - {m}{n}")))
+        .encoder(Box::new(PatternEncoder::new("{d} [{l}] {M}[{L}] - {m}{n}")))
         .build();
 
     let config = Config::builder()

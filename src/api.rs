@@ -3,6 +3,7 @@ use std::{collections::HashMap, str};
 
 use crate::{
     database::{self, DbConnection},
+    log_init_for_tests,
     model::Torrent,
     parser,
 };
@@ -25,8 +26,9 @@ pub fn construct_query_map(
     //we construct a map of param = > value
     let mut query_params = HashMap::new();
     let info_hash = parser::parse_info_hash(&torrent_file.info)?;
-    let info_hash_str = str::from_utf8(&info_hash)?;
-    let v = urlencoding::encode(info_hash_str);
+    debug!("Got an utf-8 info-hash? {:?}", info_hash);
+    let info_hash_str = String::from_utf8_lossy(&info_hash).to_string();
+    let v = urlencoding::encode(&info_hash_str);
     query_params.insert("info_hash".to_string(), v.to_string());
 
     let torrent_file_name = torrent_file
@@ -50,8 +52,10 @@ pub fn construct_query_map(
 }
 
 pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -> Result<()> {
+    //log_init_for_tests::init_logging();
     let mut peer_id_cache: HashMap<String, String> = HashMap::new();
     let client = reqwest::Client::new();
+    debug!("Going to loop through files: {:?}", torrent_files);
     for torrent_file_path in torrent_files {
         let torrent = parser::parse_torrent_file(&torrent_file_path)?;
         database::save_torrent_file(&torrent, &db)?;
