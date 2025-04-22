@@ -109,13 +109,14 @@ mod test {
     #[allow(unused_imports)]
     use super::*;
 
+    const TORRENT_FILE_NAME: &str = "Fedora-KDE-Live-x86_64-40.torrent";
     #[allow(unused_imports)]
     use crate::log_init_for_tests;
 
     #[test]
     pub fn test_parse_torrent_file() {
         info!("Test of torrent file parsing is starting!");
-        let file_name = "Fedora-KDE-Live-x86_64-40.torrent";
+        let file_name = TORRENT_FILE_NAME;
         let torrent = parse_torrent_file(file_name).unwrap();
         assert_ne!(None, torrent.torrent_file.info.name);
         info!(
@@ -217,5 +218,12 @@ mod test {
         let get_or_created_peer_id = cache.get(second_torrent_name).unwrap_or(&default);
         assert_eq!(&new_id, get_or_created_peer_id);
         //
+    }
+
+    #[test]
+    pub fn test_bencoded_value() {
+        let torrent = parse_torrent_file(TORRENT_FILE_NAME).unwrap();
+        let bencoded = torrent.torrent_file.info_bencoded;
+        info!("This is the bencoded {:?}", bencoded);
     }
 }

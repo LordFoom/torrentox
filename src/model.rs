@@ -1,4 +1,5 @@
-use serde_bytes::ByteBuf;
+use serde_bencode::value::Value;
+use serde_bytes::{ByteBuf, Deserialize};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -13,11 +14,30 @@ pub struct Torrent {
     pub downloaded: u64,
     pub uploaded: u64,
 }
+
+//impl<'a> Deserialize<'a> for Torrent {
+//    fn deserialize<D>(
+//           deserializer: D
+//        ) -> Result<Box<Self, D::Error>>
+//    where D: Deserializer<'a>{
+//        let mut map
+//    }
+//}
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TorrentFile {
     ///Tracker url, right?
     pub announce: Option<String>,
     pub info: Info,
+    pub info_bencoded: Value,
+}
+
+impl Deserialize for TorrentFile {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        todo!()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
