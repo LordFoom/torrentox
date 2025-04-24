@@ -1,3 +1,4 @@
+use color_eyre::Result;
 use serde_bencode::value::Value;
 use serde_bytes::{ByteBuf, Deserialize};
 use serde_derive::{Deserialize, Serialize};
@@ -15,29 +16,42 @@ pub struct Torrent {
     pub uploaded: u64,
 }
 
-//impl<'a> Deserialize<'a> for Torrent {
-//    fn deserialize<D>(
-//           deserializer: D
-//        ) -> Result<Box<Self, D::Error>>
-//    where D: Deserializer<'a>{
-//        let mut map
+//impl Torrent {
+//    pub fn decompose_info_into_values(&mut self) -> Result<()> {
+//        let piece_length = if let Value::Dict(val_map) = self.torrent_file.info.clone() {
+//            match val_map.get(b"piece length" as &[u8]) {
+//                Some(Value::Int(length)) => Some(length),
+//                _ => None,
+//            }
+//        } else {
+//            None
+//        };
+//        Ok(())
 //    }
 //}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct TorrentFile {
     ///Tracker url, right?
     pub announce: Option<String>,
+    pub piece_length: Option<i64>,
     pub info: Info,
-    pub info_bencoded: Value,
+    //pub info: Value,
 }
 
-impl Deserialize for TorrentFile {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        todo!()
-    }
+#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
+#[serde(untagged)]
+enum TorrentFileInfo {
+    SingleFile { length: usize },
+    MultipleFiles { files: Vec<FileInfo> },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct FileInfo {
+    ///File size in bytes
+    length: usize,
+    ///Paths for each file,split by directories
+    path: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -49,11 +63,12 @@ pub struct Info {
     pub meta_version: Option<i8>,
     ///Must have either files or length, but not both, and not neither
     #[serde(rename = "files")]
-    ///Must have either files or length, but not both, and not neither
-    pub possible_files: Option<Vec<File>>,
-    #[serde(rename = "length")]
-    pub possible_length: Option<u64>,
-    pub pieces: ByteBuf,
+    pub file: TorrentFileInfo,
+    /////Must have either files or length, but not both, and not neither
+    //pub possible_files: Option<Vec<File>>,
+    //#[serde(rename = "length")]
+    //pub possible_length: Option<u64>,
+    //pub pieces: ByteBuf,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]

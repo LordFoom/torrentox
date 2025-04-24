@@ -80,7 +80,7 @@ async fn main() -> Result<()> {
 
     let torrent_files = args.torrent_files;
     //TODO these should come from the db and be stored there
-    //let mut peer_id_cache: HashMap<String, String> = HashMap::new();
+    let mut peer_id_cache: HashMap<String, String> = HashMap::new();
     //let client = reqwest::Client::new();
     //for torrent_file_path in torrent_files {
     //    let torrent = parse_torrent_file(&torrent_file_path)?;
