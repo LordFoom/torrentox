@@ -8,7 +8,7 @@ use rand::Rng;
 use sha1::{Digest, Sha1};
 use std::{collections::HashMap, fs::File, io::Read};
 
-use crate::model::{Info, InfoHash, Torrent, TorrentFile};
+use crate::model::{Info, InfoHash, Torrent, TorrentFile, TorrentFileInfo};
 
 pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
     debug!("Parsing {file_name}");
@@ -50,13 +50,20 @@ pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
 
 ///Get either the size (single file mode) or sume of sizes (multi filed mode)
 pub fn get_size(torrent_file: &TorrentFile) -> u64 {
-    if let Some(lngth) = torrent_file.info.possible_length {
-        lngth
-    } else if let Some(files) = torrent_file.info.possible_files.clone() {
-        files.iter().map(|f| f.length).sum()
-    } else {
-        0
+    match torrent_file.info.file.clone() {
+        TorrentFileInfo::SingleFile { length } => length as u64,
+        TorrentFileInfo::MultipleFiles { files } => {
+            files.iter().map(|f| f.length).sum::<usize>() as u64
+        }
     }
+    //if let Some(single_file_length) = torrent_file.info.file {
+    //    //if let Some(lngth) = torrent_file.info..possible_length {
+    //    lngth
+    //} else if let Some(files) = torrent_file.info.possible_files.clone() {
+    //    files.iter().map(|f| f.length).sum()
+    //} else {
+    //    0
+    //}
 }
 
 pub fn parse_info_hash(metadata_info: &Info) -> Result<InfoHash> {

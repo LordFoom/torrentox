@@ -41,7 +41,7 @@ pub struct TorrentFile {
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 #[serde(untagged)]
-enum TorrentFileInfo {
+pub enum TorrentFileInfo {
     SingleFile { length: usize },
     MultipleFiles { files: Vec<FileInfo> },
 }
@@ -49,9 +49,9 @@ enum TorrentFileInfo {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct FileInfo {
     ///File size in bytes
-    length: usize,
+    pub length: usize,
     ///Paths for each file,split by directories
-    path: Vec<String>,
+    pub path: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -62,7 +62,7 @@ pub struct Info {
     #[serde(rename = "meta version")]
     pub meta_version: Option<i8>,
     ///Must have either files or length, but not both, and not neither
-    #[serde(rename = "files")]
+    #[serde(flatten)]
     pub file: TorrentFileInfo,
     /////Must have either files or length, but not both, and not neither
     //pub possible_files: Option<Vec<File>>,
