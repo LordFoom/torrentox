@@ -146,42 +146,52 @@ mod test {
 
         let mut files_found = false;
         let mut length_found = false;
-        if let Some(files) = torrent.torrent_file.info.clone().possible_files {
-            info!("Had a files element");
-            info!(
-                "We had {} files in the files element",
-                files.len().to_string().magenta().bold()
-            );
-            files.iter().for_each(|file| {
-                info!("File length:  {}", file.length);
-                if let Some(path_vec) = file.possible_path.clone() {
-                    info!("Found a path of vec of so many: {}", path_vec.len());
-                    path_vec
-                        .iter()
-                        .for_each(|p| info!("path part: {}", p.cyan()));
-                } else {
-                    info!("{}", "No path was found".underline());
-                }
-            });
-            files_found = true;
-        } else {
-            info!("Had NO files element");
+        match torrent.torrent_file.info.file.clone() {
+            TorrentFileInfo::SingleFile { length } => info!("Length of SINGLE FILE: {}", length),
+            TorrentFileInfo::MultipleFiles { files } => {
+                info!(
+                    "We had {} files in the files element",
+                    files.len().to_string().magenta().bold()
+                );
+                info!("MULTIPLE FILES, files: {:?}", files);
+            }
+        }
+        //if let Some(files) = torrent.torrent_file.info.clone().possible_files {
+        //    info!("Had a files element");
+        //    info!(
+        //        "We had {} files in the files element",
+        //        files.len().to_string().magenta().bold()
+        //    );
+        //    files.iter().for_each(|file| {
+        //        info!("File length:  {}", file.length);
+        //        if let Some(path_vec) = file.possible_path.clone() {
+        //            info!("Found a path of vec of so many: {}", path_vec.len());
+        //            path_vec
+        //                .iter()
+        //                .for_each(|p| info!("path part: {}", p.cyan()));
+        //        } else {
+        //            info!("{}", "No path was found".underline());
+        //        }
+        //    });
+        //    files_found = true;
+        //} else {
+            //info!("Had NO files element");
         }
 
-        if let Some(length) = torrent.torrent_file.info.possible_length {
-            info!("We had a length element so big: {}", length);
-            length_found = true;
-        } else {
-            info!("We had NO length element");
-        }
-
-        let exactly_one_of_two_options =
-            (files_found && !length_found) || (!files_found && length_found);
-        assert!(
-            exactly_one_of_two_options,
-            "Expected one of 'length' or 'files', but not both and not neither"
-        );
-
+        //if let Some(length) = torrent.torrent_file.info.possible_length {
+        //    info!("We had a length element so big: {}", length);
+        //    length_found = true;
+        //} else {
+        //    info!("We had NO length element");
+        //}
+        //
+        //let exactly_one_of_two_options =
+        //    (files_found && !length_found) || (!files_found && length_found);
+        //assert!(
+        //    exactly_one_of_two_options,
+        //    "Expected one of 'length' or 'files', but not both and not neither"
+        //);
+        //
         info!(
             "This is the announce url {}",
             torrent
