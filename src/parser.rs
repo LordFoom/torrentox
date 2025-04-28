@@ -175,8 +175,8 @@ mod test {
         //    });
         //    files_found = true;
         //} else {
-            //info!("Had NO files element");
-        }
+        //info!("Had NO files element");
+        //}
 
         //if let Some(length) = torrent.torrent_file.info.possible_length {
         //    info!("We had a length element so big: {}", length);
@@ -240,7 +240,7 @@ mod test {
     #[test]
     pub fn test_bencoded_value() {
         let torrent = parse_torrent_file(TORRENT_FILE_NAME).unwrap();
-        let bencoded = torrent.torrent_file.info_bencoded;
+        let bencoded = torrent.torrent_file.info;
         info!("This is the bencoded {:?}", bencoded);
     }
 }

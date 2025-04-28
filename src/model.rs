@@ -39,7 +39,7 @@ pub struct TorrentFile {
     //pub info: Value,
 }
 
-impl Deserialize for TorrentFile {
+impl<'de> Deserialize<'de> for TorrentFile {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
