@@ -1,4 +1,7 @@
+use std::collections::BTreeMap;
+
 use color_eyre::Result;
+use serde::Deserialize;
 use serde_bencode::value::Value;
 use serde_bytes::{ByteBuf, Deserialize};
 use serde_derive::{Deserialize, Serialize};
@@ -44,7 +47,16 @@ impl<'de> Deserialize<'de> for TorrentFile {
     where
         D: serde::Deserializer<'de>,
     {
-        todo!()
+        let mut map = BTreeMap::<String, Value>::deserialize(deserializer)?;
+        let announce_url = map
+            .remove("announce")
+            .ok_or_else(|| serde::de::Error::missing_field("announce"))?;
+
+        Ok(TorrentFile {
+            announce: todo!(),
+            piece_length: todo!(),
+            info: todo!(),
+        });
     }
 }
 
