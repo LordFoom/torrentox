@@ -1,10 +1,8 @@
-use std::collections::BTreeMap;
-
-use color_eyre::Result;
+use eyre::OptionExt;
 use serde::Deserialize;
 use serde_bencode::value::Value;
-use serde_bytes::{ByteBuf, Deserialize};
 use serde_derive::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Torrent {
@@ -33,7 +31,7 @@ pub struct Torrent {
 //    }
 //}
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub struct TorrentFile {
     ///Tracker url, right?
     pub announce: Option<String>,
@@ -52,6 +50,22 @@ impl<'de> Deserialize<'de> for TorrentFile {
             .remove("announce")
             .ok_or_else(|| serde::de::Error::missing_field("announce"))?;
 
+        let announce = match announce_url {
+            Value::Bytes(bytes) => {
+                String::from_utf8(bytes).map_err(|e| serde::de::Error::custom(e.to_string()))?
+            }
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "Expected bencoded dictionary that contains 'announce'",
+                ))
+            }
+        };
+
+        let info_value = map
+            .remove("info")
+            .ok_or_else(|| serde::de::Error::missing_field("info"))?;
+
+        //let info = match
         Ok(TorrentFile {
             announce: todo!(),
             piece_length: todo!(),
