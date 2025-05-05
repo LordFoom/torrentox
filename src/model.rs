@@ -1,5 +1,5 @@
-use eyre::OptionExt;
-use serde::Deserialize;
+use serde::de::Error as DeError;
+use serde::{Deserialize as Serdedeserialize, Serialize as Serdeserialize};
 use serde_bencode::value::Value;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -35,12 +35,13 @@ pub struct Torrent {
 pub struct TorrentFile {
     ///Tracker url, right?
     pub announce: Option<String>,
-    pub piece_length: Option<i64>,
+    pub piece_length: i64,
+    //pub piece_length: Option<i64>,
     pub info: Info,
     //pub info: Value,
 }
 
-impl<'de> Deserialize<'de> for TorrentFile {
+impl<'de> Serdedeserialize<'de> for TorrentFile {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -48,14 +49,15 @@ impl<'de> Deserialize<'de> for TorrentFile {
         let mut map = BTreeMap::<String, Value>::deserialize(deserializer)?;
         let announce_url = map
             .remove("announce")
-            .ok_or_else(|| serde::de::Error::missing_field("announce"))?;
+            //.ok_or_else(|| serde::de::Error::missing_field("announce"))?;
+            .ok_or_else(|| D::Error::missing_field("announce"))?;
 
         let announce = match announce_url {
             Value::Bytes(bytes) => {
-                String::from_utf8(bytes).map_err(|e| serde::de::Error::custom(e.to_string()))?
+                String::from_utf8(bytes).map_err(|e| D::Error::custom(e.to_string()))?
             }
             _ => {
-                return Err(serde::de::Error::custom(
+                return Err(D::Error::custom(
                     "Expected bencoded dictionary that contains 'announce'",
                 ))
             }
@@ -63,14 +65,36 @@ impl<'de> Deserialize<'de> for TorrentFile {
 
         let info_value = map
             .remove("info")
-            .ok_or_else(|| serde::de::Error::missing_field("info"))?;
+            .ok_or_else(|| DeError::missing_field("info"))?;
+        //.ok_or_else(|| serde::de::Error::missing_field("info"))?;
 
-        //let info = match
+        let info_raw_bytes = match info_value {
+            Value::Dict(_) => serde_bencode::to_bytes::<Value>(&info_value).map_err(|e| {
+                let msg = format!("unbencoding failed, but why? {:?}", e);
+                return D::Error::custom(&msg);
+            }),
+
+            _ => return Err(D::Error::custom("Unbencoding it did not work")),
+            //.map_err(|e| {
+            //    let msg = format!("unbencoding failed, but why? {:?}", e);
+            //    serde::de::Error::custom(msg)
+            //}),
+            //_ => return Err(serde::de::Error::custom("Unbencoding it did not work")),
+        }?;
+
+        let info: Info = serde_bencode::from_bytes(&info_raw_bytes)
+            .map_err(|e| D::Error::custom(format!("Unbencoding into Info failed {}", e)))?;
+        //if let Some(info_bytes) = info_raw_bytes_result {
+        //    info_bytes
+        //} else {
+        //    return Err(serde::de::Error::custom("bencoded or bust"));
+        //}
+
         Ok(TorrentFile {
-            announce: todo!(),
-            piece_length: todo!(),
-            info: todo!(),
-        });
+            announce: Some(announce),
+            piece_length: info.piece_length as i64,
+            info,
+        })
     }
 }
 
