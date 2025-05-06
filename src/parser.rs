@@ -1,5 +1,5 @@
 use clap::crate_version;
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{eyre, Result};
 use colored::Colorize;
 use log::debug;
 #[allow(unused_imports)]
@@ -242,5 +242,17 @@ mod test {
         let torrent = parse_torrent_file(TORRENT_FILE_NAME).unwrap();
         let bencoded = torrent.torrent_file.info;
         info!("This is the bencoded {:?}", bencoded);
+        assert_eq!(bencoded.piece_length, 262144);
+        match bencoded.file {
+            TorrentFileInfo::SingleFile { length } => panic!("Test file is multi file"),
+            TorrentFileInfo::MultipleFiles { files } => {
+                assert_eq!(2, files.len());
+                let fileInfo = files
+                    .get(0)
+                    .ok_or_else(|| "Failed to get first element")
+                    .unwrap();
+                //check that it is either the checksum or the whole file instead
+            }
+        }
     }
 }
