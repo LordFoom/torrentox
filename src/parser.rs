@@ -247,7 +247,7 @@ mod test {
             TorrentFileInfo::SingleFile { length } => panic!("Test file is multi file"),
             TorrentFileInfo::MultipleFiles { files } => {
                 assert_eq!(2, files.len());
-                let fileInfo = files
+                let file_info = files
                     .get(0)
                     .ok_or_else(|| "Failed to get first element")
                     .unwrap();
