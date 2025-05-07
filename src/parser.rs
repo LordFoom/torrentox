@@ -252,6 +252,11 @@ mod test {
                     .ok_or_else(|| "Failed to get first element")
                     .unwrap();
                 //check that it is either the checksum or the whole file instead
+                assert!(file_info.length == 2645645312 || file_info.length == 2582);
+                //assert!(
+                //    file_info.path == "Fedora-KDE-Live-x86_64-40-1.14.iso"
+                //        || file_info.path == "Fedora-Spins-40-1.14-x86_64-CHECKSUM"
+                //)
             }
         }
     }
