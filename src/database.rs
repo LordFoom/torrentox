@@ -15,8 +15,10 @@ pub struct DbConnection {
 ///Create necessary torrent tables iff not already created.
 pub fn init_tables(db: &DbConnection) -> Result<()> {
     //TODO: add (bytes)downloaded (bytes)left fields
-    let create_table = "CREATE TABLE IF NOT EXISTS torrent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, file_path TEXT, announce_url TEXT, torrent_file_raw BLOB, file_size INTEGER, downloaded INTEGER, uploaded INTEGER) ";
-    db.conn.execute(create_table, [])?;
+    let create_table_torrent= "CREATE TABLE IF NOT EXISTS torrent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, file_path TEXT, announce_url TEXT, torrent_file_raw BLOB, file_size INTEGER, downloaded INTEGER, uploaded INTEGER) ";
+    let create_table_torrent_file = "CREATE TABLE IF NOT EXISTS torrent_file(id INTEGER PRIMARY KEY AUTOINCREMENT, torrent_id INTEGER, path TEXT, size INTEGER, downloaded INTEGER, uploaded INTEGER, FOREIGN KEY (torrent_id) REFERENCES torrent(id) ON DELETE CASCADE) ";
+    db.conn.execute(create_table_torrent, [])?;
+    db.conn.execute(create_table_torrent_file, [])?;
     Ok(())
 }
 
@@ -46,6 +48,9 @@ pub fn save_torrent_file(torrent: &Torrent, db: &DbConnection) -> Result<()> {
 }
 
 pub fn list_torrent_files(db: &DbConnection) -> Result<Vec<Torrent>> {
+    //are we going to have to split this up by file IN the torrent?
+    //do we need a child table that has the actual files in it?
+    //yes we do
     let sql = "SELECT name, file_path, announce_url, torrent_file_raw, size, downloaded, uploaded FROM torrent";
     let mut stmt = db
         .conn
