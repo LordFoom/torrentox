@@ -244,7 +244,9 @@ mod test {
         info!("This is the bencoded {:?}", bencoded);
         assert_eq!(bencoded.piece_length, 262144);
         match bencoded.file {
-            TorrentFileInfo::SingleFile { length } => panic!("Test file is multi file"),
+            TorrentFileInfo::SingleFile { length } => {
+                panic!("Test file is multi file only for now, more to come")
+            }
             TorrentFileInfo::MultipleFiles { files } => {
                 assert_eq!(2, files.len());
                 let file_info = files
@@ -253,10 +255,14 @@ mod test {
                     .unwrap();
                 //check that it is either the checksum or the whole file instead
                 assert!(file_info.length == 2645645312 || file_info.length == 2582);
-                //assert!(
-                //    file_info.path == "Fedora-KDE-Live-x86_64-40-1.14.iso"
-                //        || file_info.path == "Fedora-Spins-40-1.14-x86_64-CHECKSUM"
-                //)
+                //only one item, the file name
+                assert_eq!(1, file_info.path.len());
+
+                let file_path = file_info.path.get(0).unwrap();
+                assert!(
+                    file_path == "Fedora-KDE-Live-x86_64-40-1.14.iso"
+                        || file_path == "Fedora-Spins-40-1.14-x86_64-CHECKSUM"
+                );
             }
         }
     }
