@@ -57,8 +57,8 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
     let client = reqwest::Client::new();
     debug!("Going to loop through files: {:?}", torrent_files);
     for torrent_file_path in torrent_files {
-        let torrent = parser::parse_torrent_file(&torrent_file_path)?;
-        database::save_torrent_file(&torrent, &db)?;
+        let torrent = parser::parse_torrent_file(torrent_file_path)?;
+        database::save_torrent_file(&torrent, db)?;
         let announce_url = torrent
             .torrent_file
             .announce

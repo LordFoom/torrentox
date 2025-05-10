@@ -71,7 +71,7 @@ impl<'de> Serdedeserialize<'de> for TorrentFile {
         let info_raw_bytes = match info_value {
             Value::Dict(_) => serde_bencode::to_bytes::<Value>(&info_value).map_err(|e| {
                 let msg = format!("unbencoding failed, but why? {:?}", e);
-                return D::Error::custom(&msg);
+                D::Error::custom(&msg)
             }),
 
             _ => return Err(D::Error::custom("Unbencoding it did not work")),
