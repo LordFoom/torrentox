@@ -12,7 +12,7 @@ use clap::Parser;
 
 //use anyhow::Result;
 use args::AppArgs;
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{eyre, Result};
 use database::{init_tables, save_torrent_file, DbConnection};
 use log::debug;
 use log::LevelFilter;
@@ -81,21 +81,22 @@ async fn main() -> Result<()> {
     let torrent_files = args.torrent_files;
     //TODO these should come from the db and be stored there
     let mut peer_id_cache: HashMap<String, String> = HashMap::new();
-    //let client = reqwest::Client::new();
-    //for torrent_file_path in torrent_files {
-    //    let torrent = parse_torrent_file(&torrent_file_path)?;
-    //    save_torrent_file(&torrent, &db)?;
-    //    let announce_url = torrent
-    //        .torrent_file
-    //        .announce
-    //        .clone()
-    //        .unwrap_or("Did mot find the announce url".to_owned());
-    //    debug!("announce url: {announce_url}");
-    //    let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
-    //    //create our request
-    //    let response = client.get(announce_url).query(&query_map).send().await?;
-    //    debug!("Our response: {:?}", response);
-    //}
+
+    let client = reqwest::Client::new();
+    for torrent_file_path in torrent_files {
+        let torrent = parse_torrent_file(&torrent_file_path)?;
+        save_torrent_file(&torrent, &db)?;
+        let announce_url = torrent
+            .torrent_file
+            .announce
+            .clone()
+            .ok_or_else(|| eyre!("Did not find the announce url"))?;
+        debug!("announce url: {announce_url}");
+        let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
+        //create our request
+        let response = client.get(announce_url).query(&query_map).send().await?;
+        debug!("Our response: {:?}", response);
+    }
     //connect to the announce url
 
     Ok(())
