@@ -66,7 +66,6 @@ impl<'de> Serdedeserialize<'de> for TorrentFile {
         let info_value = map
             .remove("info")
             .ok_or_else(|| DeError::missing_field("info"))?;
-        //.ok_or_else(|| serde::de::Error::missing_field("info"))?;
 
         let info_raw_bytes = match info_value {
             Value::Dict(_) => serde_bencode::to_bytes::<Value>(&info_value).map_err(|e| {
@@ -75,20 +74,10 @@ impl<'de> Serdedeserialize<'de> for TorrentFile {
             }),
 
             _ => return Err(D::Error::custom("Unbencoding it did not work")),
-            //.map_err(|e| {
-            //    let msg = format!("unbencoding failed, but why? {:?}", e);
-            //    serde::de::Error::custom(msg)
-            //}),
-            //_ => return Err(serde::de::Error::custom("Unbencoding it did not work")),
         }?;
 
         let info: Info = serde_bencode::from_bytes(&info_raw_bytes)
             .map_err(|e| D::Error::custom(format!("Unbencoding into Info failed {}", e)))?;
-        //if let Some(info_bytes) = info_raw_bytes_result {
-        //    info_bytes
-        //} else {
-        //    return Err(serde::de::Error::custom("bencoded or bust"));
-        //}
 
         Ok(TorrentFile {
             announce: Some(announce),
