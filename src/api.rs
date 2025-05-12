@@ -8,7 +8,7 @@ use crate::{
     parser,
 };
 use color_eyre::eyre::Result;
-use eyre::Ok;
+use eyre::{eyre, Ok};
 
 ///The call to the announce url is an HTTP request
 pub fn construct_query_map(
@@ -63,7 +63,7 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
             .torrent_file
             .announce
             .clone()
-            .unwrap_or("Did mot find the announce url".to_owned());
+            .ok_or_else(|| eyre!("Did mot find the announce url".to_owned()))?;
         debug!("announce url: {announce_url}");
         let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
         //create our request
