@@ -8,6 +8,7 @@ mod parser;
 use std::collections::HashMap;
 
 use api::construct_query_map;
+use api::torrent_the_files;
 use clap::Parser;
 
 //use anyhow::Result;
@@ -79,24 +80,25 @@ async fn main() -> Result<()> {
     init_tables(&db)?;
 
     let torrent_files = args.torrent_files;
+    torrent_the_files(&torrent_files, &db).await?;
     //TODO these should come from the db and be stored there
-    let mut peer_id_cache: HashMap<String, String> = HashMap::new();
-
-    let client = reqwest::Client::new();
-    for torrent_file_path in torrent_files {
-        let torrent = parse_torrent_file(&torrent_file_path)?;
-        save_torrent_file(&torrent, &db)?;
-        let announce_url = torrent
-            .torrent_file
-            .announce
-            .clone()
-            .ok_or_else(|| eyre!("Did not find the announce url"))?;
-        debug!("announce url: {announce_url}");
-        let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
-        //create our request
-        let response = client.get(announce_url).query(&query_map).send().await?;
-        debug!("Our response: {:?}", response);
-    }
+    //let mut peer_id_cache: HashMap<String, String> = HashMap::new();
+    //
+    //let client = reqwest::Client::new();
+    //for torrent_file_path in torrent_files {
+    //    let torrent = parse_torrent_file(&torrent_file_path)?;
+    //    save_torrent_file(&torrent, &db)?;
+    //    let announce_url = torrent
+    //        .torrent_file
+    //        .announce
+    //        .clone()
+    //        .ok_or_else(|| eyre!("Did not find the announce url"))?;
+    //    debug!("announce url: {announce_url}");
+    //    let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
+    //    //create our request
+    //    let response = client.get(announce_url).query(&query_map).send().await?;
+    //    debug!("Our response: {:?}", response);
+    //}
     //connect to the announce url
 
     Ok(())
