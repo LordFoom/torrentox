@@ -1,5 +1,5 @@
 use log::debug;
-use std::{collections::HashMap, str};
+use std::collections::HashMap;
 
 use crate::{
     database::{self, DbConnection},
@@ -63,12 +63,14 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
             .torrent_file
             .announce
             .clone()
-            .ok_or_else(|| eyre!("Did mot find the announce url".to_owned()))?;
+            .ok_or_else(|| eyre!("Did not find the announce url".to_owned()))?;
         debug!("announce url: {announce_url}");
         let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
         //create our request
         let response = client.get(announce_url).query(&query_map).send().await?;
         debug!("Our response: {:?}", response);
+        let body = response.text().await?;
+        debug!("Our response text: {}", body);
     }
     Ok(())
 }
