@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use crate::{
     database::{self, DbConnection},
     log_init_for_tests,
-    model::Torrent,
+    model::{Torrent, TorrentFile},
     parser,
 };
 use color_eyre::eyre::Result;
@@ -25,11 +25,6 @@ pub fn construct_query_map(
     let peer_id = parser::get_or_create_peer_id(&name, peer_id_cache)?;
     //we construct a map of param = > value
     let mut query_params = HashMap::new();
-    let info_hash = parser::parse_info_hash(&torrent_file.info)?;
-    debug!("Got an utf-8 info-hash? {:?}", info_hash);
-    let info_hash_str = String::from_utf8_lossy(&info_hash).to_string();
-    let v = urlencoding::encode(&info_hash_str);
-    query_params.insert("info_hash".to_string(), v.to_string());
 
     let torrent_file_name = torrent_file
         .info
@@ -65,14 +60,41 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
             .clone()
             .ok_or_else(|| eyre!("Did not find the announce url".to_owned()))?;
         debug!("announce url: {announce_url}");
+
+        let info_hash = construct_info_hash()?;
+
         let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
         //create our request
-        let response = client.get(announce_url).query(&query_map).send().await?;
-        debug!("Our response: {:?}", response);
-        let body = response.text().await?;
-        debug!("Our response text: {}", body);
+        let response = client
+            .get(announce_url)
+            .query(&query_map)
+            .send()
+            .await?
+            .error_for_status()?;
+        //debug!("Our response: {:?}", response);
+        //
+        //let http_status = response.status();
+        //let body = response.text().await?;
+        //if http_status.is_server_error() {
+        //    let err = eyre!(
+        //        "Server error, {}, with message {}",
+        //        http_status.to_string(),
+        //        body
+        //    );
+        //    return Err(err);
+        //} else if http_status
+        //debug!("Our response text: {}", body);
     }
     Ok(())
+}
+
+fn construct_info_hash(torrent_file: &TorrentFile) -> Result<()> {
+    let info_hash = parser::parse_info_hash(&torrent_file.info)?;
+    debug!("Got an utf-8 info-hash? {:?}", info_hash);
+    let info_hash_str = String::from_utf8_lossy(&info_hash).to_string();
+    //let v = urlencoding::encode(&info_hash_str);
+    //query_params.insert("info_hash".to_string(), v.to_string());
+    Ok(info_hash)
 }
 
 #[cfg(test)]
