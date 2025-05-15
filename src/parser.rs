@@ -1,14 +1,13 @@
 use clap::crate_version;
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::Result;
 use colored::Colorize;
 use log::debug;
 #[allow(unused_imports)]
 use log::info;
 use rand::Rng;
-use sha1::{Digest, Sha1};
 use std::{collections::HashMap, fs::File, io::Read};
 
-use crate::model::{Info, InfoHash, Torrent, TorrentFile, TorrentFileInfo};
+use crate::model::{Torrent, TorrentFile, TorrentFileInfo};
 
 pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
     debug!("Parsing {file_name}");
@@ -66,13 +65,13 @@ pub fn get_size(torrent_file: &TorrentFile) -> u64 {
     //}
 }
 
-pub fn parse_info_hash(metadata_info: &Info) -> Result<InfoHash> {
-    let info_bytes = serde_bencode::to_bytes(metadata_info)?;
-    let info_digest = Sha1::digest(info_bytes);
-    let mut info_hash = [0; 20];
-    info_hash.copy_from_slice(&info_digest);
-    Ok(info_hash)
-}
+//pub fn parse_info_hash(metadata_info: &Info) -> Result<InfoHash> {
+//    let info_bytes = serde_bencode::to_bytes(metadata_info)?;
+//    let info_digest = Sha1::digest(info_bytes);
+//    let mut info_hash = [0; 20];
+//    info_hash.copy_from_slice(&info_digest);
+//    Ok(info_hash)
+//}
 
 const UNIVERSE_OF_CHARS: &str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 ///If the torrentfile has a peer_id in the map, return it.
@@ -201,9 +200,10 @@ mod test {
                 .unwrap_or_else(|| "No announce url".to_owned())
         );
 
-        let md_info = torrent.clone().torrent_file.info;
-        let parse_info_hash = parse_info_hash(&md_info).unwrap();
-        assert_eq!(20, parse_info_hash.len());
+        //let md_info = torrent.clone().torrent_file.info;
+        //torrent.clone().torrent_file.info_value
+        //let parse_info_hash = parse_info_hash(&md_info).unwrap();
+        assert_eq!(20, torrent.torrent_file.info_hash.len());
     }
 
     #[test]

@@ -1807,9 +1807,11 @@ dependencies = [
  "serde_bencode",
  "serde_bytes",
  "serde_derive",
+ "serde_urlencoded",
  "sha-1",
  "thiserror",
  "tokio",
+ "url",
  "urlencoding",
 ]
 

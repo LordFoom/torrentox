@@ -2,7 +2,9 @@ use serde::de::Error as DeError;
 use serde::{Deserialize as Serdedeserialize, Serialize as Serdeserialize};
 use serde_bencode::value::Value;
 use serde_derive::{Deserialize, Serialize};
+use sha1::{Digest, Sha1};
 use std::collections::BTreeMap;
+use url::form_urlencoded;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Torrent {
@@ -10,6 +12,8 @@ pub struct Torrent {
     pub name: String,
     pub file_path: String,
     pub announce_url: Option<String>,
+    ///The torrent file, as bytes, in case we want to get currently unmodeled fields later if
+    ///needed
     pub raw_bytes: Vec<u8>,
     ///left == size-downloaded
     pub size: u64,
@@ -38,7 +42,8 @@ pub struct TorrentFile {
     pub piece_length: i64,
     //pub piece_length: Option<i64>,
     pub info: Info,
-    //pub info: Value,
+    ///The raw value of the info dictionary, for turning into a info_hash
+    pub info_hash: InfoHash,
 }
 
 impl<'de> Serdedeserialize<'de> for TorrentFile {
@@ -76,6 +81,11 @@ impl<'de> Serdedeserialize<'de> for TorrentFile {
             _ => return Err(D::Error::custom("Unbencoding it did not work")),
         }?;
 
+        let mut info_hash = [0; 20];
+        let hash_result = Sha1::digest(&info_raw_bytes);
+        info_hash.copy_from_slice(&hash_result);
+        let encoded_info_hash: String = form_urlencoded::byte_serialize(&info_hash).collect();
+
         let info: Info = serde_bencode::from_bytes(&info_raw_bytes)
             .map_err(|e| D::Error::custom(format!("Unbencoding into Info failed {}", e)))?;
 
@@ -83,6 +93,7 @@ impl<'de> Serdedeserialize<'de> for TorrentFile {
             announce: Some(announce),
             piece_length: info.piece_length as i64,
             info,
+            info_hash,
         })
     }
 }

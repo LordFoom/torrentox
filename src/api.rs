@@ -1,10 +1,10 @@
 use log::debug;
 use std::collections::HashMap;
+use url::form_urlencoded;
 
 use crate::{
     database::{self, DbConnection},
-    log_init_for_tests,
-    model::{Torrent, TorrentFile},
+    model::{InfoHash, Torrent, TorrentFile},
     parser,
 };
 use color_eyre::eyre::Result;
@@ -26,11 +26,11 @@ pub fn construct_query_map(
     //we construct a map of param = > value
     let mut query_params = HashMap::new();
 
-    let torrent_file_name = torrent_file
-        .info
-        .name
-        .clone()
-        .unwrap_or("unknown".to_string());
+    //let torrent_file_name = torrent_file
+    //    .info
+    //    .name
+    //    .clone()
+    //    .unwrap_or("unknown".to_string());
     query_params.insert("peer_id".to_string(), peer_id);
 
     let size = parser::get_size(torrent_file);
@@ -61,13 +61,20 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
             .ok_or_else(|| eyre!("Did not find the announce url".to_owned()))?;
         debug!("announce url: {announce_url}");
 
-        let info_hash = construct_info_hash()?;
+        let info_hash = &torrent.torrent_file.info_hash;
+        let encoded_info_hash: String = form_urlencoded::byte_serialize(info_hash).collect();
 
         let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
+        let encoded_params = serde_urlencoded::to_string(query_map)?;
         //create our request
+        let full_announce_url = format!(
+            "{}?{}&info-hash={}",
+            announce_url,
+            encoded_params.clone(),
+            encoded_info_hash,
+        );
         let response = client
-            .get(announce_url)
-            .query(&query_map)
+            .get(full_announce_url)
             .send()
             .await?
             .error_for_status()?;
@@ -88,14 +95,14 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
     Ok(())
 }
 
-fn construct_info_hash(torrent_file: &TorrentFile) -> Result<()> {
-    let info_hash = parser::parse_info_hash(&torrent_file.info)?;
-    debug!("Got an utf-8 info-hash? {:?}", info_hash);
-    let info_hash_str = String::from_utf8_lossy(&info_hash).to_string();
-    //let v = urlencoding::encode(&info_hash_str);
-    //query_params.insert("info_hash".to_string(), v.to_string());
-    Ok(info_hash)
-}
+//fn construct_info_hash(torrent_file: &TorrentFile) -> Result<InfoHash> {
+//    let info_hash = parser::parse_info_hash(&torrent_file.info)?;
+//    debug!("Got an utf-8 info-hash? {:?}", info_hash);
+//    //let info_hash_str = String::from_utf8_lossy(&info_hash).to_string();
+//    //let v = urlencoding::encode(&info_hash_str);
+//    //query_params.insert("info_hash".to_string(), v.to_string());
+//    Ok(info_hash)
+//}
 
 #[cfg(test)]
 mod test {

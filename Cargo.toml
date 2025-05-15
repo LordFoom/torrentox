@@ -20,9 +20,11 @@ serde = "1.0.210"
 serde_bencode = "0.2.4"
 serde_bytes = "0.11.15"
 serde_derive = "1.0.210"
+serde_urlencoded = "0.7.1"
 sha-1 = "0.10.1"
 thiserror = "1.0.63"
 tokio = { version = "1.44.2", features = ["rt", "macros"] }
+url = "2.5.4"
 urlencoding = "2.1.3"
 
 
