@@ -51,6 +51,7 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
     let mut peer_id_cache: HashMap<String, String> = HashMap::new();
     let client = reqwest::Client::new();
     debug!("Going to loop through files: {:?}", torrent_files);
+    //TODO make this a tui and such
     for torrent_file_path in torrent_files {
         let torrent = parser::parse_torrent_file(&torrent_file_path)?;
         database::save_torrent_file(&torrent, db)?;
@@ -68,29 +69,37 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
         let encoded_params = serde_urlencoded::to_string(query_map)?;
         //create our request
         let full_announce_url = format!(
-            "{}?{}&info-hash={}",
+            "{}?{}&info_hash={}",
             announce_url,
             encoded_params.clone(),
             encoded_info_hash,
         );
+        debug!("full_announce_url={full_announce_url}");
         let response = client
             .get(full_announce_url)
             .send()
             .await?
             .error_for_status()?;
-        //debug!("Our response: {:?}", response);
-        //
-        //let http_status = response.status();
-        //let body = response.text().await?;
-        //if http_status.is_server_error() {
-        //    let err = eyre!(
-        //        "Server error, {}, with message {}",
-        //        http_status.to_string(),
-        //        body
-        //    );
-        //    return Err(err);
-        //} else if http_status
-        //debug!("Our response text: {}", body);
+        debug!("Our response: {:?}", response);
+
+        let http_status = response.status();
+        let body = response.text().await?;
+        if http_status.is_server_error() {
+            let err = eyre!(
+                "Server error, {}, with message {}",
+                http_status.to_string(),
+                body
+            );
+            return Err(err);
+        } else if http_status.is_client_error() {
+            let err = eyre!(
+                "Client error, {}, with message {}",
+                http_status.to_string(),
+                body
+            );
+            return Err(err);
+        }
+        debug!("Our response text: {}", body);
     }
     Ok(())
 }
