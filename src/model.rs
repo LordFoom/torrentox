@@ -21,19 +21,10 @@ pub struct Torrent {
     pub uploaded: u64,
 }
 
-//impl Torrent {
-//    pub fn decompose_info_into_values(&mut self) -> Result<()> {
-//        let piece_length = if let Value::Dict(val_map) = self.torrent_file.info.clone() {
-//            match val_map.get(b"piece length" as &[u8]) {
-//                Some(Value::Int(length)) => Some(length),
-//                _ => None,
-//            }
-//        } else {
-//            None
-//        };
-//        Ok(())
-//    }
-//}
+pub struct Peer {
+    ip: std::net::IpAddr,
+    port: u16,
+}
 
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
 pub struct TorrentFile {
@@ -84,7 +75,6 @@ impl<'de> Serdedeserialize<'de> for TorrentFile {
         let mut info_hash = [0; 20];
         let hash_result = Sha1::digest(&info_raw_bytes);
         info_hash.copy_from_slice(&hash_result);
-        let encoded_info_hash: String = form_urlencoded::byte_serialize(&info_hash).collect();
 
         let info: Info = serde_bencode::from_bytes(&info_raw_bytes)
             .map_err(|e| D::Error::custom(format!("Unbencoding into Info failed {}", e)))?;
