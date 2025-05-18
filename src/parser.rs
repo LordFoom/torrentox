@@ -110,6 +110,7 @@ pub fn get_or_create_peer_id(
     Ok(peer_id)
 }
 
+pub fn extract_peers(peer_str: &str) {}
 #[cfg(test)]
 mod test {
     #[allow(unused_imports)]
