@@ -1,10 +1,9 @@
 use serde::de::Error as DeError;
-use serde::{Deserialize as Serdedeserialize, Serialize as Serdeserialize};
+use serde::Deserialize as Serdedeserialize;
 use serde_bencode::value::Value;
 use serde_derive::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 use std::collections::BTreeMap;
-use url::form_urlencoded;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Torrent {
@@ -19,11 +18,6 @@ pub struct Torrent {
     pub size: u64,
     pub downloaded: u64,
     pub uploaded: u64,
-}
-
-pub struct Peer {
-    ip: std::net::IpAddr,
-    port: u16,
 }
 
 #[derive(Serialize, Debug, Clone, PartialEq, Eq)]
@@ -154,7 +148,7 @@ pub struct TrackerAnnounceResponse {
 pub struct Peer {
     id: String,
     ip: String,
-    port: u64,
+    port: u16,
 }
 
 pub type InfoHash = [u8; 20];

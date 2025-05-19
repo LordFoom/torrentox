@@ -1,10 +1,11 @@
 use log::debug;
+use serde_bencode::de;
 use std::collections::HashMap;
 use url::form_urlencoded;
 
 use crate::{
     database::{self, DbConnection},
-    model::{InfoHash, Torrent, TorrentFile},
+    model::{InfoHash, Torrent, TorrentFile, TrackerAnnounceResponse},
     parser,
 };
 use color_eyre::eyre::Result;
@@ -84,8 +85,8 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
         debug!("Our response: {:?}", response);
 
         let http_status = response.status();
-        let body = response.text().await?;
         if http_status.is_server_error() {
+            let body = response.text().await?;
             let err = eyre!(
                 "Server error, {}, with message {}",
                 http_status.to_string(),
@@ -93,6 +94,7 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
             );
             return Err(err);
         } else if http_status.is_client_error() {
+            let body = response.text().await?;
             let err = eyre!(
                 "Client error, {}, with message {}",
                 http_status.to_string(),
@@ -100,7 +102,13 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
             );
             return Err(err);
         }
-        debug!("Our response text: {}", body);
+        //debug!("Our response text: {}", body);
+
+        let body_bytes = response.bytes().await?;
+        let response: TrackerAnnounceResponse = de::from_bytes(&body_bytes)?;
+        //we get to here it was successful
+        //extract the peers from the response text
+        //let peers = extract_peers
     }
     Ok(())
 }
