@@ -15,7 +15,7 @@ pub struct DbConnection {
 ///Create necessary torrent tables iff not already created.
 pub fn init_tables(db: &DbConnection) -> Result<()> {
     //TODO: add (bytes)downloaded (bytes)left fields
-    let create_table_torrent= "CREATE TABLE IF NOT EXISTS torrent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, file_path TEXT, announce_url TEXT, torrent_file_raw BLOB, file_size INTEGER, downloaded INTEGER, uploaded INTEGER) ";
+    let create_table_torrent= "CREATE TABLE IF NOT EXISTS torrent (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, file_path TEXT, announce_url TEXT, torrent_file_raw BLOB, size INTEGER, downloaded INTEGER, uploaded INTEGER) ";
     let create_table_torrent_file = "CREATE TABLE IF NOT EXISTS torrent_file(id INTEGER PRIMARY KEY AUTOINCREMENT, torrent_id INTEGER, path TEXT, size INTEGER, downloaded INTEGER, uploaded INTEGER, FOREIGN KEY (torrent_id) REFERENCES torrent(id) ON DELETE CASCADE) ";
     db.conn.execute(create_table_torrent, [])?;
     db.conn.execute(create_table_torrent_file, [])?;
@@ -25,7 +25,7 @@ pub fn init_tables(db: &DbConnection) -> Result<()> {
 ///We save a torrent file, recording a few attributes,
 ///but otherwise storing the raw bytes so as not to lose any info during the coding process
 pub fn save_torrent_file(torrent: &Torrent, db: &DbConnection) -> Result<()> {
-    let sql = "INSERT INTO torrent (name, file_path, announce_url, torrent_file_raw) VALUES (?1, ?2, ?3, ?4) ";
+    let sql = "INSERT INTO torrent (name, file_path, announce_url, torrent_file_raw, size, downloaded, uploaded) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) ";
     db.conn.execute(
         sql,
         (
@@ -42,6 +42,9 @@ pub fn save_torrent_file(torrent: &Torrent, db: &DbConnection) -> Result<()> {
                 .clone()
                 .unwrap_or("None".to_owned()),
             torrent.raw_bytes.clone(),
+            torrent.size.clone(),
+            torrent.downloaded.clone(),
+            torrent.uploaded,
         ),
     )?;
     Ok(())

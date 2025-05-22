@@ -106,21 +106,14 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
 
         let body_bytes = response.bytes().await?;
         let response: TrackerAnnounceResponse = de::from_bytes(&body_bytes)?;
-        //we get to here it was successful
-        //extract the peers from the response text
-        //let peers = extract_peers
+        //if we get to here it was successful
+        response
+            .peers
+            .iter()
+            .for_each(|peer| debug!("Peer! {}", peer));
     }
     Ok(())
 }
-
-//fn construct_info_hash(torrent_file: &TorrentFile) -> Result<InfoHash> {
-//    let info_hash = parser::parse_info_hash(&torrent_file.info)?;
-//    debug!("Got an utf-8 info-hash? {:?}", info_hash);
-//    //let info_hash_str = String::from_utf8_lossy(&info_hash).to_string();
-//    //let v = urlencoding::encode(&info_hash_str);
-//    //query_params.insert("info_hash".to_string(), v.to_string());
-//    Ok(info_hash)
-//}
 
 #[cfg(test)]
 mod test {

@@ -3,7 +3,7 @@ use serde::Deserialize as Serdedeserialize;
 use serde_bencode::value::Value;
 use serde_derive::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fmt::Display};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Torrent {
@@ -146,9 +146,14 @@ pub struct TrackerAnnounceResponse {
 
 #[derive(Serialize, Deserialize)]
 pub struct Peer {
-    id: String,
-    ip: String,
-    port: u16,
+    pub id: String,
+    pub ip: String,
+    pub port: u16,
 }
 
+impl Display for Peer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}@{}:{}", self.id, self.ip, self.port)
+    }
+}
 pub type InfoHash = [u8; 20];
