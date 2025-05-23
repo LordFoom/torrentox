@@ -1,6 +1,8 @@
+use color_eyre::Result;
 use serde::de::Error as DeError;
 use serde::Deserialize as Serdedeserialize;
 use serde_bencode::value::Value;
+use serde_bytes::Deserialize;
 use serde_derive::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 use std::{collections::BTreeMap, fmt::Display};
@@ -141,19 +143,23 @@ pub struct TrackerAnnounceRequest {
 pub struct TrackerAnnounceResponse {
     ///Number of seconds the downloader should wait between regular rerequests.
     pub interval: usize,
+    #[serde(deserialize_with = "deserialize_peer")]
     pub peers: Vec<Peer>,
 }
 
+fn deserialize_peer<'de, D>(deserializer: D) -> Result<Vec<Peer>> {}
+
 #[derive(Serialize, Deserialize)]
 pub struct Peer {
-    pub id: String,
+    // pub id: String,
     pub ip: String,
     pub port: u16,
 }
 
 impl Display for Peer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}@{}:{}", self.id, self.ip, self.port)
+        write!(f, "{}:{}", self.ip, self.port)
     }
 }
+
 pub type InfoHash = [u8; 20];
