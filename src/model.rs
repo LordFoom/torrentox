@@ -1,3 +1,4 @@
+use color_eyre::eyre::eyre;
 use color_eyre::Result;
 use serde::de::Error as DeError;
 use serde::Deserialize as Serdedeserialize;
@@ -147,7 +148,25 @@ pub struct TrackerAnnounceResponse {
     pub peers: Vec<Peer>,
 }
 
-fn deserialize_peer<'de, D>(deserializer: D) -> Result<Vec<Peer>> {}
+fn deserialize_peer<'de, D>(deserializer: D) -> Result<Vec<Peer>>
+where
+    D: serde::Deserializer<'de>,
+{
+    let bytes: Vec<u8> = Vec::deserialize(deserializer);
+    if bytes.len() % 6 != 0 {
+        return D::Err(eyre!(
+            "Wrong byte length, this is a packed bit format so 6 bit units"
+        ));
+    }
+    let mut peers = Vec::new();
+    for chunk in bytes.chunks(6) {
+        let ip = format!("{}.{}.{}.{}", chunk[0], chunk[1], chunk[2], chunk[3]);
+        let port = u16::from_be_bytes([chunk[4], chunk[5]]);
+        let peer = Peer { ip, port };
+        peers.push(peer);
+    }
+    Ok(peers)
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct Peer {
