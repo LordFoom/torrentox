@@ -1,9 +1,7 @@
-use color_eyre::eyre::eyre;
-use color_eyre::Result;
 use serde::de::Error as DeError;
 use serde::Deserialize as Serdedeserialize;
 use serde_bencode::value::Value;
-use serde_bytes::Deserialize;
+use serde_bytes::ByteBuf;
 use serde_derive::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 use std::{collections::BTreeMap, fmt::Display};
@@ -35,7 +33,7 @@ pub struct TorrentFile {
 }
 
 impl<'de> Serdedeserialize<'de> for TorrentFile {
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
@@ -148,14 +146,16 @@ pub struct TrackerAnnounceResponse {
     pub peers: Vec<Peer>,
 }
 
-fn deserialize_peer<'de, D>(deserializer: D) -> Result<Vec<Peer>>
+fn deserialize_peer<'de, D>(deserializer: D) -> Result<Vec<Peer>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    let bytes: Vec<u8> = Vec::deserialize(deserializer);
+    let buf = ByteBuf::deserialize(deserializer)?;
+    let bytes = buf.into_vec();
+
     if bytes.len() % 6 != 0 {
-        return D::Err(eyre!(
-            "Wrong byte length, this is a packed bit format so 6 bit units"
+        return Err(D::Error::custom(
+            "Wrong byte length, this is a packed bit format so 6 bit units",
         ));
     }
     let mut peers = Vec::new();
