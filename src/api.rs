@@ -5,7 +5,7 @@ use url::form_urlencoded;
 
 use crate::{
     database::{self, DbConnection},
-    model::{InfoHash, Torrent, TorrentFile, TrackerAnnounceResponse},
+    model::{InfoHash, Peer, Torrent, TorrentFile, TrackerAnnounceResponse},
     parser,
 };
 use color_eyre::eyre::Result;
@@ -54,6 +54,7 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
     debug!("Going to loop through files: {:?}", torrent_files);
     //TODO make this a tui and such
     //once we get the loading of the down working
+    let mut torrent_peers: HashMap<String, Vec<Peer>> = HashMap::new();
     for torrent_file_path in torrent_files {
         let torrent = parser::parse_torrent_file(&torrent_file_path)?;
         database::save_torrent_file(&torrent, db)?;
@@ -68,7 +69,10 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
         let encoded_info_hash: String = form_urlencoded::byte_serialize(info_hash).collect();
 
         let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
-        let encoded_params = serde_urlencoded::to_string(query_map)?;
+        let peer_id = query_map
+            .get("peer_id")
+            .ok_or_else(|| eyre!("Expected peer_id to be assigned query_map by now".to_string()))?;
+        let encoded_params = serde_urlencoded::to_string(&query_map)?;
         //create our request
         let full_announce_url = format!(
             "{}?{}&info_hash={}",
@@ -111,6 +115,7 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
             .peers
             .iter()
             .for_each(|peer| debug!("Peer! {}", peer));
+        torrent_peers.insert(peer_id.to_string(), response.peers);
     }
     Ok(())
 }
