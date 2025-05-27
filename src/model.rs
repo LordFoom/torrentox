@@ -182,3 +182,4 @@ impl Display for Peer {
 }
 
 pub type InfoHash = [u8; 20];
+pub type Handshake = [u8; 68];
