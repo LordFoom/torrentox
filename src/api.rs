@@ -5,7 +5,7 @@ use url::form_urlencoded;
 
 use crate::{
     database::{self, DbConnection},
-    model::{InfoHash, Peer, Torrent, TorrentFile, TrackerAnnounceResponse},
+    model::{Handshake, InfoHash, Peer, PeerId, Torrent, TorrentFile, TrackerAnnounceResponse},
     parser,
 };
 use color_eyre::eyre::Result;
@@ -69,9 +69,9 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
         let encoded_info_hash: String = form_urlencoded::byte_serialize(info_hash).collect();
 
         let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
-        let peer_id = query_map
-            .get("peer_id")
-            .ok_or_else(|| eyre!("Expected peer_id to be assigned query_map by now".to_string()))?;
+        let peer_id = query_map.get("peer_id").ok_or_else(|| {
+            eyre!("Expected peer_id to be assigned in the query_map by now".to_string())
+        })?;
         let encoded_params = serde_urlencoded::to_string(&query_map)?;
         //create our request
         let full_announce_url = format!(
@@ -118,6 +118,16 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
         torrent_peers.insert(peer_id.to_string(), response.peers);
     }
     Ok(())
+}
+
+fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> Result<Handshake> {
+    let mut buf = [0u8; 68];
+    buf[0] = 19;
+    buf[1..20].copy_from_slice(b"BitTorrent protocol");
+    // buf[20..28] are reserved (set to zero unless you support extensions)
+    buf[28..48].copy_from_slice(info_hash);
+    buf[48..68].copy_from_slice(peer_id);
+    Ok(buf)
 }
 
 #[cfg(test)]
