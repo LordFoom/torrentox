@@ -47,14 +47,17 @@ pub fn construct_query_map(
     Ok(query_params)
 }
 
-pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -> Result<()> {
+pub async fn get_peer_list(
+    torrent_files: &Vec<String>,
+    db: &DbConnection,
+) -> Result<HashMap<PeerId, Vec<Peer>>> {
     //log_init_for_tests::init_logging();
     let mut peer_id_cache: HashMap<String, String> = HashMap::new();
     let client = reqwest::Client::new();
     debug!("Going to loop through files: {:?}", torrent_files);
     //TODO make this a tui and such
     //once we get the loading of the down working
-    let mut torrent_peers: HashMap<String, Vec<Peer>> = HashMap::new();
+    let mut torrent_peers: HashMap<PeerId, Vec<Peer>> = HashMap::new();
     for torrent_file_path in torrent_files {
         let torrent = parser::parse_torrent_file(&torrent_file_path)?;
         database::save_torrent_file(&torrent, db)?;
@@ -69,9 +72,15 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
         let encoded_info_hash: String = form_urlencoded::byte_serialize(info_hash).collect();
 
         let query_map = construct_query_map(&torrent, &mut peer_id_cache)?;
-        let peer_id = query_map.get("peer_id").ok_or_else(|| {
+        let peer_id_str = query_map.get("peer_id").ok_or_else(|| {
             eyre!("Expected peer_id to be assigned in the query_map by now".to_string())
         })?;
+        let peer_id_bytes = peer_id_str.as_bytes();
+        if peer_id_bytes.len() != 20 {
+            return Err(eyre!("Peer Id must be exactly 20 bytes long"));
+        }
+        let mut peer_id = [0u8; 20];
+        peer_id.copy_from_slice(peer_id_bytes);
         let encoded_params = serde_urlencoded::to_string(&query_map)?;
         //create our request
         let full_announce_url = format!(
@@ -115,9 +124,9 @@ pub async fn torrent_the_files(torrent_files: &Vec<String>, db: &DbConnection) -
             .peers
             .iter()
             .for_each(|peer| debug!("Peer! {}", peer));
-        torrent_peers.insert(peer_id.to_string(), response.peers);
+        torrent_peers.insert(peer_id, response.peers);
     }
-    Ok(())
+    Ok(torrent_peers)
 }
 
 fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> Result<Handshake> {
@@ -134,9 +143,9 @@ fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> Result<Handshake> 
 mod test {
     use super::*;
     #[tokio::test]
-    async fn test_torrent_the_files() {
+    async fn test_get_peer_list() {
         let torrent_files = vec!["./Fedora-KDE-Live-x86_64-40.torrent".to_string()];
         let db = database::test::init_test_conn();
-        torrent_the_files(&torrent_files, &db).await.unwrap();
+        get_peer_list(&torrent_files, &db).await.unwrap();
     }
 }
