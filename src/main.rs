@@ -5,10 +5,8 @@ mod error_types;
 mod log_init_for_tests;
 mod model;
 mod parser;
-use std::collections::HashMap;
 
-use api::construct_query_map;
-use api::torrent_the_files;
+use api::get_peer_list;
 use clap::Parser;
 
 //use anyhow::Result;
@@ -23,7 +21,6 @@ use log4rs::{
     encode::pattern::PatternEncoder,
     Config,
 };
-use parser::parse_torrent_file;
 use rusqlite::Connection;
 
 fn init(verbose: bool) -> Result<()> {
@@ -80,7 +77,8 @@ async fn main() -> Result<()> {
     init_tables(&db)?;
 
     let torrent_files = args.torrent_files;
-    torrent_the_files(&torrent_files, &db).await?;
+    let peer_torrent = get_peer_list(&torrent_files, &db).await?;
+    for (peer_id, peer_list) in peer_torrent {}
     //TODO these should come from the db and be stored there
     //let mut peer_id_cache: HashMap<String, String> = HashMap::new();
     //
