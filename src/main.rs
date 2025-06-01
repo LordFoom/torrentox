@@ -78,10 +78,14 @@ async fn main() -> Result<()> {
 
     let torrent_files = args.torrent_files;
     let peer_torrent = get_peer_list(&torrent_files, &db).await?;
+
     let client = reqwest::Client::new();
     for (peer_id, peer_list) in peer_torrent {
         //get a response from the peer
-        let peer_url = construct_peer_url()
+        for peer in peer_list {
+            let peer_url = format!("http://{}:{}", peer.ip, peer.port);
+            let response = client.get(peer_url).send().await?.error_for_status();
+        }
     }
     //TODO these should come from the db and be stored there
     //let mut peer_id_cache: HashMap<String, String> = HashMap::new();
