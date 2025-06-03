@@ -84,7 +84,28 @@ async fn main() -> Result<()> {
         //get a response from the peer
         for peer in peer_list {
             let peer_url = format!("http://{}:{}", peer.ip, peer.port);
-            let response = client.get(peer_url).send().await?.error_for_status();
+            let response = client.get(peer_url).send().await?;
+            let http_status = response.status();
+            //handle error status
+            if http_status.is_server_error() {
+                let body = response.text().await?;
+                let err = eyre!(
+                    "Server error, {}, with message {}",
+                    http_status.to_string(),
+                    body
+                );
+                return Err(err);
+            } else if http_status.is_client_error() {
+                let body = response.text().await?;
+                let err = eyre!(
+                    "Client error, {}, with message {}",
+                    http_status.to_string(),
+                    body
+                );
+                return Err(err);
+            }
+
+            let txt = response.text()?;
         }
     }
     //TODO these should come from the db and be stored there

@@ -146,6 +146,9 @@ pub struct TrackerAnnounceResponse {
     pub peers: Vec<Peer>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PeerResponse {}
+
 fn deserialize_peer<'de, D>(deserializer: D) -> Result<Vec<Peer>, D::Error>
 where
     D: serde::Deserializer<'de>,
