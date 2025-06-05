@@ -1,8 +1,11 @@
 use log::debug;
 use serde_bencode::de;
 use std::collections::HashMap;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
 use url::form_urlencoded;
 
+use crate::model::TorrentSession;
 use crate::{
     database::{self, DbConnection},
     model::{Handshake, InfoHash, Peer, PeerId, Torrent, TorrentFile, TrackerAnnounceResponse},
@@ -47,17 +50,17 @@ pub fn construct_query_map(
     Ok(query_params)
 }
 
-pub async fn get_peer_list(
+pub async fn init_peer_torrent_sessions(
     torrent_files: &Vec<String>,
     db: &DbConnection,
-) -> Result<HashMap<PeerId, Vec<Peer>>> {
+) -> Result<Vec<TorrentSession>> {
     //log_init_for_tests::init_logging();
     let mut peer_id_cache: HashMap<String, String> = HashMap::new();
     let client = reqwest::Client::new();
     debug!("Going to loop through files: {:?}", torrent_files);
     //TODO make this a tui and such
     //once we get the loading of the down working
-    let mut torrent_peers: HashMap<PeerId, Vec<Peer>> = HashMap::new();
+    let mut torrents: Vec<TorrentSession> = Vec::new();
     for torrent_file_path in torrent_files {
         let torrent = parser::parse_torrent_file(&torrent_file_path)?;
         database::save_torrent_file(&torrent, db)?;
@@ -124,19 +127,53 @@ pub async fn get_peer_list(
             .peers
             .iter()
             .for_each(|peer| debug!("Peer! {}", peer));
-        torrent_peers.insert(peer_id, response.peers);
+        let ts = TorrentSession {
+            peer_id,
+            peers: response.peers,
+            torrent,
+        };
+        torrents.push(ts);
     }
-    Ok(torrent_peers)
+    Ok(torrents)
 }
 
-fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> Result<Handshake> {
-    let mut buf = [0u8; 68];
-    buf[0] = 19;
-    buf[1..20].copy_from_slice(b"BitTorrent protocol");
-    // buf[20..28] are reserved (set to zero unless you support extensions)
-    buf[28..48].copy_from_slice(info_hash);
-    buf[48..68].copy_from_slice(peer_id);
-    Ok(buf)
+pub async fn connect_and_send_handshake(
+    peer_ip: &str,
+    peer_port: u16,
+    info_hash: &[u8; 20],
+    peer_id: &[u8; 20],
+) -> Result<()> {
+    let addr = format!("{}:{}", peer_ip, peer_port);
+    let mut stream = TcpStream::connect(addr).await?;
+
+    // Build the handshake
+    let handshake = build_handshake(info_hash, peer_id);
+
+    // Send the handshake
+    stream.write_all(&handshake).await?;
+
+    // Read the peer's handshake response (68 bytes)
+    let mut response = [0u8; 68];
+    stream.read_exact(&mut response).await?;
+
+    // You can now parse the response using Handshake::from_bytes
+    println!("Received handshake: {:?}", &response[..]);
+
+    Ok(())
+}
+
+pub fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> Handshake {
+    let mut handshake = [0u8; 68];
+    //Protocol string length (always 19)
+    handshake[0] = 19;
+    //Protocol string "BitTorrent protocol"
+    handshake[1..20].copy_from_slice(b"BitTorrent protocol");
+    // Reserved bytes (8 bytes, usually all zeros unless supporting extensions)
+    //   // Already zeroed by array initialization
+    //Info hash (20 bytes)
+    handshake[28..48].copy_from_slice(info_hash);
+    handshake[48..68].copy_from_slice(peer_id);
+    handshake
 }
 
 #[cfg(test)]
@@ -146,6 +183,29 @@ mod test {
     async fn test_get_peer_list() {
         let torrent_files = vec!["./Fedora-KDE-Live-x86_64-40.torrent".to_string()];
         let db = database::test::init_test_conn();
-        get_peer_list(&torrent_files, &db).await.unwrap();
+        init_peer_torrent_sessions(&torrent_files, &db)
+            .await
+            .unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_connect_and_send_handshake() {
+        let torrent_files = vec!["./Fedora-KDE-Live-x86_64-40.torrent".to_string()];
+        let db = database::test::init_test_conn();
+        let torrent_sessions = init_peer_torrent_sessions(&torrent_files, &db)
+            .await
+            .unwrap();
+        for torrent_session in torrent_sessions {
+            for peer in torrent_session.peers {
+                connect_and_send_handshake(
+                    &peer.ip,
+                    peer.port,
+                    &torrent_session.torrent.torrent_file.info_hash,
+                    &torrent_session.peer_id,
+                )
+                .await
+                .unwrap()
+            }
+        }
     }
 }

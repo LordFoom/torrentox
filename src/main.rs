@@ -6,7 +6,8 @@ mod log_init_for_tests;
 mod model;
 mod parser;
 
-use api::get_peer_list;
+use api::connect_and_send_handshake;
+use api::init_peer_torrent_sessions;
 use clap::Parser;
 
 //use anyhow::Result;
@@ -59,6 +60,7 @@ fn init(verbose: bool) -> Result<()> {
     //this bad boy can enable us to change logging config at runtime, which i can think would
     //be nice, to be able to go from one to the other, hmmmmmmmmm
     let _handle = log4rs::init_config(config)?;
+    debug!("Logging initialized. 🦋🪵🪓🪚");
 
     Ok(())
 }
@@ -77,35 +79,42 @@ async fn main() -> Result<()> {
     init_tables(&db)?;
 
     let torrent_files = args.torrent_files;
-    let peer_torrent = get_peer_list(&torrent_files, &db).await?;
+    let peer_torrent = init_peer_torrent_sessions(&torrent_files, &db).await?;
 
     let client = reqwest::Client::new();
-    for (peer_id, peer_list) in peer_torrent {
+    for (torrent_session) in peer_torrent {
         //get a response from the peer
-        for peer in peer_list {
+        for peer in torrent_session.peers {
             let peer_url = format!("http://{}:{}", peer.ip, peer.port);
-            let response = client.get(peer_url).send().await?;
-            let http_status = response.status();
-            //handle error status
-            if http_status.is_server_error() {
-                let body = response.text().await?;
-                let err = eyre!(
-                    "Server error, {}, with message {}",
-                    http_status.to_string(),
-                    body
-                );
-                return Err(err);
-            } else if http_status.is_client_error() {
-                let body = response.text().await?;
-                let err = eyre!(
-                    "Client error, {}, with message {}",
-                    http_status.to_string(),
-                    body
-                );
-                return Err(err);
-            }
+            connect_and_send_handshake(
+                &peer.ip,
+                peer.port,
+                &torrent_session.torrent.torrent_file.info_hash,
+                &torrent_session.peer_id,
+            )
+            .await?;
+            // let response = client.get(peer_url).send().await?;
+            // let http_status = response.status();
+            // //handle error status
+            // if http_status.is_server_error() {
+            //     let body = response.text().await?;
+            //     let err = eyre!(
+            //         "Server error, {}, with message {}",
+            //         http_status.to_string(),
+            //         body
+            //     );
+            //     return Err(err);
+            // } else if http_status.is_client_error() {
+            //     let body = response.text().await?;
+            //     let err = eyre!(
+            //         "Client error, {}, with message {}",
+            //         http_status.to_string(),
+            //         body
+            //     );
+            //     return Err(err);
+            // }
 
-            let txt = response.text()?;
+            // let txt = response.text().await.error
         }
     }
     //TODO these should come from the db and be stored there

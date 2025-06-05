@@ -187,3 +187,9 @@ impl Display for Peer {
 pub type InfoHash = [u8; 20];
 pub type PeerId = [u8; 20];
 pub type Handshake = [u8; 68];
+
+pub struct TorrentSession {
+    pub torrent: Torrent,
+    pub peer_id: PeerId,
+    pub peers: Vec<Peer>,
+}
