@@ -1,3 +1,4 @@
+use color_eyre::owo_colors::OwoColorize;
 use log::debug;
 use serde_bencode::de;
 use std::collections::HashMap;
@@ -145,6 +146,7 @@ pub async fn connect_and_send_handshake(
 ) -> Result<()> {
     debug!("connect_and_send_handshake firing...");
     let addr = format!("{}:{}", peer_ip, peer_port);
+    debug!("Connecting to {addr}.....!!{}", "!!".bold().bright_blue());
     let mut stream = TcpStream::connect(addr).await?;
 
     // Build the handshake
