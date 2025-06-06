@@ -82,7 +82,7 @@ async fn main() -> Result<()> {
     let peer_torrent = init_peer_torrent_sessions(&torrent_files, &db).await?;
 
     let client = reqwest::Client::new();
-    for (torrent_session) in peer_torrent {
+    for torrent_session in peer_torrent {
         //get a response from the peer
         for peer in torrent_session.peers {
             let peer_url = format!("http://{}:{}", peer.ip, peer.port);
