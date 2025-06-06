@@ -143,7 +143,7 @@ pub async fn connect_and_send_handshake(
     info_hash: &[u8; 20],
     peer_id: &[u8; 20],
 ) -> Result<()> {
-    log.debug("connect_and_send_handshake firing...");
+    debug!("connect_and_send_handshake firing...");
     let addr = format!("{}:{}", peer_ip, peer_port);
     let mut stream = TcpStream::connect(addr).await?;
 
@@ -160,7 +160,7 @@ pub async fn connect_and_send_handshake(
     // You can now parse the response using Handshake::from_bytes
     println!("Received handshake: {:?}", &response[..]);
 
-    log.debug("connect_and_send_handshake finished.");
+    debug!("connect_and_send_handshake finished.");
     Ok(())
 }
 
