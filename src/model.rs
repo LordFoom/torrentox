@@ -186,10 +186,21 @@ impl Display for Peer {
 
 pub type InfoHash = [u8; 20];
 pub type PeerId = [u8; 20];
-pub type Handshake = [u8; 68];
+// pub type Handshake = [u8; 68];
 
 pub struct TorrentSession {
     pub torrent: Torrent,
     pub peer_id: PeerId,
     pub peers: Vec<Peer>,
+}
+
+pub struct Handshake {
+    pub pstr: String,
+    pub reserved: [u8; 8],
+    pub info_hash: InfoHash,
+    pub peer_id: PeerId,
+}
+
+impl Handshake {
+    pub fn from_bytes(bytes: [u8; 68]) -> Handshake {}
 }
