@@ -9,7 +9,7 @@ use url::form_urlencoded;
 use crate::model::TorrentSession;
 use crate::{
     database::{self, DbConnection},
-    model::{Handshake, InfoHash, Peer, PeerId, Torrent, TorrentFile, TrackerAnnounceResponse},
+    model::{InfoHash, Peer, PeerHandshake, PeerId, Torrent, TorrentFile, TrackerAnnounceResponse},
     parser,
 };
 use color_eyre::eyre::Result;
@@ -166,7 +166,7 @@ pub async fn connect_and_send_handshake(
     Ok(())
 }
 
-pub fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> Handshake {
+pub fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> [u8; 68] {
     let mut handshake = [0u8; 68];
     //Protocol string length (always 19)
     handshake[0] = 19;

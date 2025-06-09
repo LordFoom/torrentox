@@ -7,7 +7,7 @@ use log::info;
 use rand::Rng;
 use std::{collections::HashMap, fs::File, io::Read};
 
-use crate::model::{Torrent, TorrentFile, TorrentFileInfo};
+use crate::model::{InfoHash, PeerHandshake, Torrent, TorrentFile, TorrentFileInfo};
 
 pub fn parse_torrent_file(file_name: &str) -> Result<Torrent> {
     debug!("Parsing {file_name}");
@@ -108,6 +108,20 @@ pub fn get_or_create_peer_id(
     peer_id_cach.insert(torrent_file_name.to_string(), peer_id.to_string());
 
     Ok(peer_id)
+}
+
+pub fn parse_peer_response(peer_response_bytes: &[u8]) -> Option<PeerHandshake> {
+    if peer_response_bytes.len() != 68 {
+        return None;
+    }
+    if peer_response_bytes[0] != 19 && &peer_response_bytes[1..20] != b"BitTorrent protocol" {
+        return None;
+    }
+    let mut info_hash = [0u8; 20];
+    info_hash.copy_from_slice(&peer_response_bytes[28..48]);
+    let mut peer_id = [0u8; 20];
+    peer_id.copy_from_slice(&peer_response_bytes[48..68]);
+    Some(PeerHandshake { info_hash, peer_id })
 }
 
 pub fn extract_peers(peer_str: &str) {}

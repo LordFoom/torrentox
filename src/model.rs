@@ -194,13 +194,7 @@ pub struct TorrentSession {
     pub peers: Vec<Peer>,
 }
 
-pub struct Handshake {
-    pub pstr: String,
-    pub reserved: [u8; 8],
+pub struct PeerHandshake {
     pub info_hash: InfoHash,
     pub peer_id: PeerId,
-}
-
-impl Handshake {
-    pub fn from_bytes(bytes: [u8; 68]) -> Handshake {}
 }
