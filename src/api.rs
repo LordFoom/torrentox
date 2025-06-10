@@ -6,10 +6,11 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use url::form_urlencoded;
 
-use crate::model::TorrentSession;
+use crate::model::{PeerHandshake, TorrentSession};
+use crate::parser::parse_peer_response;
 use crate::{
     database::{self, DbConnection},
-    model::{InfoHash, Peer, PeerHandshake, PeerId, Torrent, TorrentFile, TrackerAnnounceResponse},
+    model::{InfoHash, PeerId, Torrent, TrackerAnnounceResponse},
     parser,
 };
 use color_eyre::eyre::Result;
@@ -138,12 +139,13 @@ pub async fn init_peer_torrent_sessions(
     Ok(torrents)
 }
 
+///Connect to a peer and return its possible handshake
 pub async fn connect_and_send_handshake(
     peer_ip: &str,
     peer_port: u16,
     info_hash: &[u8; 20],
     peer_id: &[u8; 20],
-) -> Result<()> {
+) -> Result<Option<PeerHandshake>> {
     debug!("connect_and_send_handshake firing...");
     let addr = format!("{}:{}", peer_ip, peer_port);
     debug!("Connecting to {addr}.....!!{}", "!!".bold().bright_blue());
@@ -158,12 +160,10 @@ pub async fn connect_and_send_handshake(
     // Read the peer's handshake response (68 bytes)
     let mut response = [0u8; 68];
     stream.read_exact(&mut response).await?;
-
-    // You can now parse the response using Handshake::from_bytes
-    println!("Received handshake: {:?}", &response[..]);
+    let maybe_peer_handshake = parse_peer_response(&response);
 
     debug!("connect_and_send_handshake finished.");
-    Ok(())
+    Ok(maybe_peer_handshake)
 }
 
 pub fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> [u8; 68] {

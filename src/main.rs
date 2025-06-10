@@ -12,8 +12,8 @@ use clap::Parser;
 
 //use anyhow::Result;
 use args::AppArgs;
-use color_eyre::eyre::{eyre, Result};
-use database::{init_tables, save_torrent_file, DbConnection};
+use color_eyre::eyre::Result;
+use database::{init_tables, DbConnection};
 use log::debug;
 use log::LevelFilter;
 use log4rs::{
@@ -86,7 +86,7 @@ async fn main() -> Result<()> {
         //get a response from the peer
         for peer in torrent_session.peers {
             let peer_url = format!("http://{}:{}", peer.ip, peer.port);
-            connect_and_send_handshake(
+            let peer_response = connect_and_send_handshake(
                 &peer.ip,
                 peer.port,
                 &torrent_session.torrent.torrent_file.info_hash,
