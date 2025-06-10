@@ -145,7 +145,7 @@ pub async fn connect_and_send_handshake(
     peer_port: u16,
     info_hash: &[u8; 20],
     peer_id: &[u8; 20],
-) -> Result<Option<PeerHandshake>> {
+) -> Result<PeerHandshake> {
     debug!("connect_and_send_handshake firing...");
     let addr = format!("{}:{}", peer_ip, peer_port);
     debug!("Connecting to {addr}.....!!{}", "!!".bold().bright_blue());
@@ -160,10 +160,11 @@ pub async fn connect_and_send_handshake(
     // Read the peer's handshake response (68 bytes)
     let mut response = [0u8; 68];
     stream.read_exact(&mut response).await?;
-    let maybe_peer_handshake = parse_peer_response(&response);
-
-    debug!("connect_and_send_handshake finished.");
-    Ok(maybe_peer_handshake)
+    if let Some(peer_handshake) = parse_peer_response(&response) {
+        return Ok(peer_handshake);
+    } else {
+        return Err(eyre!("Failed to parse a peer response"));
+    };
 }
 
 pub fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> [u8; 68] {
