@@ -171,7 +171,7 @@ where
     Ok(peers)
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Peer {
     // pub id: String,
     pub ip: String,
@@ -190,10 +190,12 @@ pub type PeerId = [u8; 20];
 
 pub struct TorrentSession {
     pub torrent: Torrent,
+    ///The torrentox peer_id
     pub peer_id: PeerId,
     pub peers: Vec<Peer>,
 }
 
+#[derive(Debug)]
 pub struct PeerHandshake {
     pub info_hash: InfoHash,
     pub peer_id: PeerId,

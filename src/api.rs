@@ -183,6 +183,8 @@ pub fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> [u8; 68] {
 
 #[cfg(test)]
 mod test {
+    use rand::Rng;
+
     use super::*;
     #[tokio::test]
     async fn test_get_peer_list() {
@@ -200,16 +202,21 @@ mod test {
         let torrent_sessions = init_peer_torrent_sessions(&torrent_files, &db)
             .await
             .unwrap();
+        //pick a random element
         for torrent_session in torrent_sessions {
-            for peer in torrent_session.peers {
-                connect_and_send_handshake(
-                    &peer.ip,
-                    peer.port,
+            let peers = torrent_session.peers;
+            let rand_idx = rand::rng().random_range(0..peers.len());
+            if let Some(rand_peer) = peers.get(rand_idx) {
+                debug!("{:?}", rand_peer);
+                let peer_handshake = connect_and_send_handshake(
+                    &rand_peer.ip,
+                    rand_peer.port,
                     &torrent_session.torrent.torrent_file.info_hash,
                     &torrent_session.peer_id,
                 )
                 .await
-                .unwrap()
+                .unwrap();
+                debug!("{:?}", peer_handshake);
             }
         }
     }
