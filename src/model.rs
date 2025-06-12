@@ -195,8 +195,15 @@ pub struct TorrentSession {
     pub peers: Vec<Peer>,
 }
 
+///Handshake returned from the peer
 #[derive(Debug)]
 pub struct PeerHandshake {
     pub info_hash: InfoHash,
     pub peer_id: PeerId,
+}
+
+///State of our interaction with the peer
+pub struct PeerState {
+    is_choked: bool,
+    bitfield: Vec<bool>,
 }
