@@ -216,7 +216,13 @@ mod test {
                 )
                 .await
                 .unwrap();
+                assert_eq!(
+                    peer_handshake.info_hash,
+                    torrent_session.torrent.torrent_file.info_hash
+                );
                 debug!("{:?}", peer_handshake);
+            } else {
+                panic!("Could find test peer for some reason");
             }
         }
     }
