@@ -1,3 +1,4 @@
+use bitvec::prelude::*;
 use serde::de::Error as DeError;
 use serde::Deserialize as Serdedeserialize;
 use serde_bencode::value::Value;
@@ -204,6 +205,19 @@ pub struct PeerHandshake {
 
 ///State of our interaction with the peer
 pub struct PeerState {
-    is_choked: bool,
-    bitfield: Vec<bool>,
+    pub is_choked: bool,
+    pub is_interested: bool,
+    pub peer_bitfield: BitVec,
+    pub num_pieces: usize,
+}
+
+impl PeerState {
+    pub fn new(num_pieces: usize) -> Self {
+        Self {
+            is_choked: true,
+            is_interested: false,
+            num_pieces,
+            peer_bitfield: bitvec![0; num_pieces],
+        }
+    }
 }
