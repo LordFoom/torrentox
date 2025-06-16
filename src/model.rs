@@ -1,4 +1,5 @@
 use bitvec::prelude::*;
+use bitvec::vec::BitVec;
 use serde::de::Error as DeError;
 use serde::Deserialize as Serdedeserialize;
 use serde_bencode::value::Value;
@@ -218,6 +219,25 @@ impl PeerState {
             is_interested: false,
             num_pieces,
             peer_bitfield: bitvec![0; num_pieces],
+        }
+    }
+
+    pub fn has_piece(&self, index: usize) -> bool {
+        self.peer_bitfield.get(index).map(|b| *b).unwrap_or(false)
+    }
+
+    pub fn update_have(&mut self, index: usize) {
+        if index < self.num_pieces {
+            self.peer_bitfield.set(index, true);
+        }
+    }
+
+    pub fn update_bitfield(&mut self, data: &[u8]) {
+        // let mut bits: BitVec<Msb0, u8> = BitVec::with_capacity(self.num_pieces);
+        let mut bits = bitvec!(u8, Msb0; 0; self.num_pieces);
+
+        for (i, bit) in bits.iter().by_vals().enumerate().take(self.num_pieces) {
+            self.peer_bitfield.set(i, bit);
         }
     }
 }
