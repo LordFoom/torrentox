@@ -208,7 +208,7 @@ pub struct PeerHandshake {
 pub struct PeerState {
     pub is_choked: bool,
     pub is_interested: bool,
-    pub peer_bitfield: BitVec,
+    pub peer_bitfield: BitVec<u8, Msb0>,
     pub num_pieces: usize,
 }
 
@@ -218,7 +218,7 @@ impl PeerState {
             is_choked: true,
             is_interested: false,
             num_pieces,
-            peer_bitfield: bitvec![0; num_pieces],
+            peer_bitfield: bitvec![u8, Msb0; 0; num_pieces],
         }
     }
 
@@ -233,11 +233,19 @@ impl PeerState {
     }
 
     pub fn update_bitfield(&mut self, data: &[u8]) {
-        // let mut bits: BitVec<Msb0, u8> = BitVec::with_capacity(self.num_pieces);
-        let mut bits = bitvec!(u8, Msb0; 0; self.num_pieces);
+        let mut bits = bitvec![Msb0, u8; 0; self.num_pieces];
 
-        for (i, bit) in bits.iter().by_vals().enumerate().take(self.num_pieces) {
-            self.peer_bitfield.set(i, bit);
+        for (i, byte) in data.iter().enumerate() {
+            for j in 0..8 {
+                let bit_index = i * 8 + j;
+                if bit_index >= self.num_pieces {
+                    break;
+                }
+                let bit = (byte >> (7 - j)) & 1 != 0;
+                bits.set(bit_index, bit);
+            }
         }
+
+        self.peer_bitfield = bits;
     }
 }
