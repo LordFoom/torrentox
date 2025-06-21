@@ -233,7 +233,7 @@ impl PeerState {
     }
 
     pub fn update_bitfield(&mut self, data: &[u8]) {
-        let mut bits = bitvec![Msb0, u8; 0; self.num_pieces];
+        let mut bits = bitvec![u8, Msb0; 0; self.num_pieces];
 
         for (i, byte) in data.iter().enumerate() {
             for j in 0..8 {
