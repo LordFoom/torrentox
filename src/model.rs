@@ -249,3 +249,9 @@ impl PeerState {
         self.peer_bitfield = bits;
     }
 }
+
+pub struct PieceMetadata {
+    pub index: u32,
+    pub length: usize,
+    pub sha1_hash: [u8; 20],
+}

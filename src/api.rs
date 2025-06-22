@@ -1,9 +1,12 @@
+use bitvec::order::Msb0;
+use bitvec::vec::BitVec;
 use color_eyre::owo_colors::OwoColorize;
 use log::debug;
 use serde_bencode::de;
 use std::collections::HashMap;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
+use tokio::stream;
 use url::form_urlencoded;
 
 use crate::model::{PeerHandshake, TorrentSession};
@@ -179,6 +182,16 @@ pub fn build_handshake(info_hash: &InfoHash, peer_id: &PeerId) -> [u8; 68] {
     handshake[28..48].copy_from_slice(info_hash);
     handshake[48..68].copy_from_slice(peer_id);
     handshake
+}
+
+pub async fn peer_loop(
+    mut stream: TcpStream,
+    peer_bitfield: BitVec<u8, Msb0>,
+    local_bitfield: &mut BitVec<u8, Msb0>,
+    pieces: &[PieceMetadata],
+    info_hash: &InfoHash,
+    peer_id: &PeerId,
+) -> Result<()> {
 }
 
 #[cfg(test)]
