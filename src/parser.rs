@@ -124,7 +124,13 @@ pub fn parse_peer_response(peer_response_bytes: &[u8]) -> Option<PeerHandshake> 
     Some(PeerHandshake { info_hash, peer_id })
 }
 
-pub fn extract_peers(peer_str: &str) {}
+pub fn get_total_file_size(torrent_file_info: &TorrentFileInfo) -> usize {
+    match torrent_file_info {
+        TorrentFileInfo::SingleFile { length } => length.to_owned(),
+        TorrentFileInfo::MultipleFiles { files } => files.iter().map(|f| f.length).sum(),
+    }
+}
+
 #[cfg(test)]
 mod test {
     #[allow(unused_imports)]
